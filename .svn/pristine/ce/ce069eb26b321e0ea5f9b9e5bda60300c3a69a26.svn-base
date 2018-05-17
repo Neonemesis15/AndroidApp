@@ -1,0 +1,46 @@
+package org.seratic.location;
+
+import android.content.Context;
+
+public class GPSLocationListener {
+	private Context context;
+	private MarcacionLocationHandler onEventHandler;
+	
+	private MarcacionLocationHandler locationHandler;
+	
+	public GPSLocationListener(Context context, MarcacionLocationHandler onEventHandler) {
+		super();
+		this.context = context;
+		this.onEventHandler = onEventHandler;
+	}
+
+
+//	public void onLocationChanged(Location location) {
+//		if (location != null) {
+//			
+////			Toast.makeText(context,"coordenadas obtenidas... proveedor = "+location.getProvider(),
+////					Toast.LENGTH_LONG).show();
+//			onEventHandler.setCurrentLocation(location);
+//			onEventHandler.sendEmptyMessage(0);
+//		}
+//	}
+//
+//	
+//	public void onProviderDisabled(String provider) {
+//		// TODO Auto-generated method stub
+//		
+//	}
+//
+//	
+//	public void onProviderEnabled(String provider) {
+//		// TODO Auto-generated method stub
+//		
+//	}
+//
+//	
+//	public void onStatusChanged(String provider, int status, Bundle extras) {
+//		// TODO Auto-generated method stub
+//		
+//	}
+
+}

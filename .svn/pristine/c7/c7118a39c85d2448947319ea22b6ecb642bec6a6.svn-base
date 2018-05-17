@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tr_reporte_precio_pdv_obs_sanfernando_aavv"
+    style="@style/BodyGrilla"
+    android:paddingBottom="5dp"
+    android:paddingTop="5dp" >
+
+    <TextView
+        android:id="@+id/tv_codigo"
+        style="@style/TextoBodyGrilla" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical|center_horizontal"
+        android:paddingBottom="5dp"
+        android:paddingTop="5dp" >
+
+        <CheckBox
+            android:id="@+id/ck_observacion"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:button="@drawable/radiobuttonstyle" />
+    </LinearLayout>
+
+</TableRow>

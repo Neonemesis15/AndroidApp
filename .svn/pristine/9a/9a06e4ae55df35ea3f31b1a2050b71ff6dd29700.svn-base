@@ -1,0 +1,191 @@
+package com.org.seratic.lucky.accessData.entities;
+
+public class E_ReportePrecio extends Entity {
+
+	private int id;
+	private int id_reporte_cab;
+	private String sku_prod;
+	private String desc_prod;
+	private String precio_lista;
+	private String precio_reventa;
+	private String precio_oferta;
+	private String precio_pdv;
+	private String precio_costo;
+	private String precio_regular;
+	private String precio_min;
+	private String precio_max;
+	private String precio_mayorista;
+	private String cod_motivo_obs;
+	private String cod_tipo_precio;
+	String observacion="";
+	boolean hayCambio;
+	private String precio_pvd;
+
+	public E_ReportePrecio() {
+
+	}
+
+	public E_ReportePrecio(int id_reporte_cab, String sku_prod, String precio_lista, String precio_reventa, String precio_oferta, String precio_pdv, String precio_costo, String precio_regular, String precio_min, String precio_max, String precio_mayorista, String precio_venta, String cod_motivo_obs, String cod_tipo_precio) {
+		this.id_reporte_cab = id_reporte_cab;
+		this.sku_prod = sku_prod;
+		this.precio_lista = precio_lista;
+		this.precio_reventa = precio_reventa;
+		this.precio_oferta = precio_oferta;
+		this.precio_pdv = precio_pdv;
+		this.precio_costo = precio_costo;
+		this.precio_regular = precio_regular;
+		this.precio_min = precio_min;
+		this.precio_max = precio_max;
+		this.precio_mayorista = precio_mayorista;
+		if(precio_venta!=null && !precio_venta.trim().isEmpty()){
+			this.precio_reventa = precio_venta;
+		}
+		this.cod_motivo_obs = cod_motivo_obs;
+		this.cod_tipo_precio = cod_tipo_precio;
+	}
+
+	public void setSku_prod(String sku_prod) {
+		this.sku_prod = sku_prod;
+	}
+
+	public String getSku_prod() {
+		return sku_prod;
+	}
+
+	public void setPrecio_lista(String precio_lista) {
+		this.precio_lista = precio_lista;
+	}
+
+	public String getPrecio_lista() {
+		return precio_lista;
+	}
+
+	public void setPrecio_reventa(String precio_reventa) {
+		this.precio_reventa = precio_reventa;
+	}
+
+	public String getPrecio_reventa() {
+		return precio_reventa;
+	}
+
+	public void setPrecio_oferta(String precio_oferta) {
+		this.precio_oferta = precio_oferta;
+	}
+
+	public String getPrecio_oferta() {
+		return precio_oferta;
+	}
+
+	public void setPrecio_pdv(String precio_pdv) {
+		this.precio_pdv = precio_pdv;
+	}
+
+	public String getPrecio_pdv() {
+		return precio_pdv;
+	}
+
+	public void setPrecio_costo(String precio_costo) {
+		this.precio_costo = precio_costo;
+	}
+
+	public String getPrecio_costo() {
+		return precio_costo;
+	}
+
+	public void setPrecio_min(String precio_min) {
+		this.precio_min = precio_min;
+	}
+
+	public String getPrecio_min() {
+		return precio_min;
+	}
+
+	public void setPrecio_max(String precio_max) {
+		this.precio_max = precio_max;
+	}
+
+	public String getPrecio_max() {
+		return precio_max;
+	}
+
+	public void setPrecio_regular(String precio_regular) {
+		this.precio_regular = precio_regular;
+	}
+
+	public String getPrecio_regular() {
+		return precio_regular;
+	}
+
+	public void setPrecio_mayorista(String precio_mayorista) {
+		this.precio_mayorista = precio_mayorista;
+	}
+
+	public String getPrecio_mayorista() {
+		return precio_mayorista;
+	}
+
+	public void setCod_motivo_obs(String cod_motivo_obs) {
+		this.cod_motivo_obs = cod_motivo_obs;
+	}
+
+	public String getCod_motivo_obs() {
+		return cod_motivo_obs;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId_reporte_cab(int id_reporte_cab) {
+		this.id_reporte_cab = id_reporte_cab;
+	}
+
+	public int getId_reporte_cab() {
+		return id_reporte_cab;
+	}
+
+	public void setDesc_prod(String desc_prod) {
+		this.desc_prod = desc_prod;
+	}
+
+	public String getDesc_prod() {
+		return desc_prod;
+	}
+		
+	public String getObservacion() {
+		return observacion;
+	}
+
+	public void setObservacion(String observacion) {
+		this.observacion = observacion;
+	}
+
+	public void setHayCambio(boolean hayCambio) {
+		this.hayCambio = hayCambio;
+	}
+	
+	public boolean isHayCambio() {
+		return hayCambio;
+	}
+
+	public String getPrecio_pvd() {
+		return precio_pvd;
+	}
+
+	public void setPrecio_pvd(String precio_pvd) {
+		this.precio_pvd = precio_pvd;
+	}
+	
+	public String getCod_tipo_precio() {
+		return cod_tipo_precio;
+	}
+	
+	public void setCod_tipo_precio(String cod_tipo_precio) {
+		this.cod_tipo_precio = cod_tipo_precio;
+	}
+	
+}

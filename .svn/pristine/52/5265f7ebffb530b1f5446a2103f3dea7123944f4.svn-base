@@ -1,0 +1,46 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/tv_subtitulo"
+        style="@style/Subtitulo" />
+
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="30dp"
+        android:stretchColumns="*" >
+
+        <TableRow style="@style/HeadGrilla" >
+
+            <TextView
+                style="@style/TextoHeadGrilla"
+                android:text="Sku"
+                android:width="60dp" />
+
+            <TextView
+                style="@style/TextoHeadGrilla"
+                android:text="Ingresos"
+                android:width="80dp" />
+
+            <TextView
+                style="@style/TextoHeadGrilla"
+                android:text="Stock Final"
+                android:width="100dp" />
+        </TableRow>
+    </TableLayout>
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <TableLayout
+            android:id="@+id/tl_reporte_impulso_sanfernando_moderno"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:stretchColumns="*" >
+        </TableLayout>
+    </ScrollView>
+
+</LinearLayout>

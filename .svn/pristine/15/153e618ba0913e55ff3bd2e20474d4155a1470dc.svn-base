@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.org.seratic.lucky"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk android:minSdkVersion="10" />
+
+    <uses-feature android:name="android.hardware.camera" />
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name" >
+        <uses-library android:name="com.google.android.maps" />
+
+        <activity
+            android:name=".Splash"
+            android:label="@string/app_name"
+            android:noHistory="true"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".AutenticacionActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="MainMenu"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name=".PuntosVentaActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="PuntoVentaSeleccion"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="android.intent.action.SEARCH" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+        </activity>
+        <activity
+            android:name="PendientesActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="EstadosPendientesActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="MotivoNoVisita"
+            android:screenOrientation="portrait" 
+             android:theme="@android:style/Theme.Black.NoTitleBar" >
+            
+        </activity>
+        <activity
+            android:name="InicioFinVisita"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="ListadoRegistroActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="EstadoActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="ReporteFotografico"
+            android:screenOrientation="portrait" >
+        </activity>
+         <activity 
+             android:name="ReporteVideo"
+            android:screenOrientation="portrait"            
+          ></activity>
+        <activity
+            android:name="SavePhoto"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="ListaDeReporte"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="OpcionReporteActivity"
+            android:screenOrientation="portrait" >
+        </activity>
+        <activity
+            android:name="ContenedorReportes"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="ReporteITTActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="FotoCometarioAlicorp"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="ReporteExhibicionesAlicorp"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="RegistroPDVActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="RegistroPDVDistribuidorasActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="RegistroPDVNoImplementacionActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+         <activity
+            android:name="Prueba"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="ReporteGeneral"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="ReporteComentario"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity android:name="ComponenteOpcReporteActivity" >
+        </activity>
+        <activity
+            android:name="ReportesGrillaActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" />
+        <activity
+            android:name="ReportePromocion"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="Empresa"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="ReportePresencia"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" />
+        <activity
+            android:name="ReporteFarmaciaMatPOPDt"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="ReporteCompetencia"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name=".ReporteCompetenciaAlicorp_Mayor"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>       
+        <activity
+            android:name="ReporteCompetenciaAlicorp_AS"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+            <activity
+            android:name="ReporteCompetenciaSanFdo"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+            
+        <activity
+            android:name="ReporteLayout"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="TipoMaterialPopAlicorp"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="ElementosVisibilidad"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="SaveElementoVisibilidad"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="ReporteNoImplActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="ReportesPendientesActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="PuntosVentaMapa"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity
+            android:name="MenuBodegasActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        <activity android:name="PruebaTablaEditableActivity" >
+        </activity>
+        <activity
+            android:name="ReporteSOD"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar">
+        </activity>
+         <activity
+            android:name=".ReporteFotoIncidencia"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+         <activity
+            android:name="ReporteIncidencia"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+        
+         <activity android:name="ConfiguracionActivity" 
+            android:theme="@android:style/Theme.Black.NoTitleBar" 
+            android:screenOrientation="portrait">
+        </activity>
+        
+        <activity android:name="ReporteExhibicionDetalles" 
+            android:theme="@android:style/Theme.Black.NoTitleBar" 
+            android:screenOrientation="portrait">
+        </activity>
+        
+       <activity android:name="MotivosActivity" 
+            android:theme="@android:style/Theme.Black.NoTitleBar" 
+            android:screenOrientation="portrait">
+        </activity>
+        <activity
+            android:name="ReporteIncidenciaSFTradicional"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+         <activity
+            android:name="ReporteCreditoCompetencia"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+         <activity
+            android:name="ReporteMarcajePrecio"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+         <activity
+            android:name="MensajeActivity"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Black.NoTitleBar" >
+        </activity>
+       
+            
+             
+<!--         Joseph Gonzales -->
+        <activity android:name="MotivoNoVisitaBodega" 
+            android:theme="@android:style/Theme.Black.NoTitleBar" 
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name="RegistrarPDVCodigoITTActivity" 
+            android:theme="@android:style/Theme.Black.NoTitleBar" 
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name="ReporteAcciones_Mercado_SanFernando_AAVV" 
+            android:theme="@android:style/Theme.Black.NoTitleBar" 
+            android:screenOrientation="portrait">
+        </activity>
+        <activity android:name="RegistroPDV_AAVVSanFernandoActivity" 
+            android:theme="@android:style/Theme.Black.NoTitleBar" 
+            android:screenOrientation="portrait">
+        </activity>
+            
+
+    </application>
+		<uses-permission android:name="android.permission.RECORD_AUDIO"></uses-permission>
+		<uses-permission android:name="android.permission.RECORD_VIDEO"/>
+		<uses-permission android:name="android.permission.ACCESS_WIFI_STATE"></uses-permission>
+		<uses-permission android:name="android.permission.UPDATE_DEVICE_STATS"></uses-permission>
+		<uses-permission android:name="android.permission.CHANGE_WIFI_STATE"></uses-permission>
+		<uses-permission android:name="android.permission.WAKE_LOCK"></uses-permission>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
+
+</manifest>

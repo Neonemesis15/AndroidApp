@@ -1,0 +1,96 @@
+package com.org.seratic.lucky.accessData.control;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+import com.org.seratic.lucky.accessData.entities.E_MstCredito;
+import com.org.seratic.lucky.accessData.entities.Entity;
+
+public class E_MstCreditoController extends EntityController {
+	private SQLiteDatabase db;
+	private Cursor dbCursor;
+
+	public E_MstCreditoController(SQLiteDatabase db) {
+		super();
+		this.db = db;
+	}
+
+	@Override
+	public boolean create(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean edit(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean remove(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public List<Entity> getAll() {
+		List<Entity> creditos = new ArrayList<Entity>();
+		E_MstCredito credito = new E_MstCredito();
+		dbCursor = db.rawQuery("SELECT cod_credito, nom_credito, cod_reporte FROM TBL_MST_CREDITO", null);
+		dbCursor.moveToFirst();
+		if (dbCursor.getCount() > 0) {
+			while (!dbCursor.isAfterLast()) {
+				credito.setCod_credito(dbCursor.getString(0));
+				credito.setNom_credito(dbCursor.getString(1));
+				credito.setCod_reporte(dbCursor.getString(2));
+				creditos.add(credito);
+				dbCursor.moveToNext();
+			}
+			return creditos;
+		} else
+			return null;
+	}
+
+	public List<E_MstCredito> getCreditosByIdReporte(int cod_reporte) {
+		List<E_MstCredito> creditos = null;
+		
+		String sql = "SELECT cod_credito, nom_credito, cod_reporte FROM TBL_MST_CREDITO WHERE cod_reporte="+cod_reporte;
+		dbCursor = db.rawQuery(sql, null);
+		dbCursor.moveToFirst();
+		if (dbCursor.getCount() > 0) {
+			creditos = new ArrayList<E_MstCredito>();
+			while (!dbCursor.isAfterLast()) {
+				E_MstCredito cred = new E_MstCredito();
+				cred.setCod_credito(dbCursor.getString(0));
+				cred.setNom_credito(dbCursor.getString(1));
+				cred.setCod_reporte(String.valueOf(cod_reporte));
+				creditos.add(cred);
+				dbCursor.moveToNext();
+			}
+		}
+		return creditos;
+	}
+	
+	public E_MstCredito getCreditoByCodCredito(int cod_credito, int cod_reporte) {
+		
+		E_MstCredito cred = new E_MstCredito();
+		String sql = "SELECT cod_credito, nom_credito, cod_reporte FROM TBL_MST_CREDITO WHERE cod_credito = "+cod_credito+" and cod_reporte = "+cod_reporte;
+		dbCursor = db.rawQuery(sql, null);
+		dbCursor.moveToFirst();
+		if (dbCursor.getCount() > 0) {
+			cred.setCod_credito(String.valueOf(cod_credito));
+			cred.setNom_credito(dbCursor.getString(1));
+			cred.setCod_reporte(dbCursor.getString(2));
+		}else{
+			return null;
+		}
+		return cred;
+	}
+	
+	
+	
+}

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent" android:layout_height="match_parent"
+	android:orientation="vertical"
+	android:gravity="center_horizontal"
+	android:padding="10dp"
+	>
+
+	<TextView android:id="@+id/textUbicacion"
+		android:layout_width="match_parent" android:layout_height="wrap_content"
+		android:text="Ubicacion" android:textColor="#ffffff" android:textSize="18dp"
+		android:textStyle="bold" />
+	<Spinner android:id="@+id/ubicacionSpinner" android:layout_width="fill_parent"
+		android:layout_height="wrap_content"/>
+
+	<TextView android:id="@+id/textPosicion"
+		android:layout_width="match_parent" android:layout_height="wrap_content"
+		android:text="Posicion" android:textColor="#ffffff" android:textSize="18dp"
+		android:textStyle="bold" />
+	<Spinner android:id="@+id/posicionSpinner" android:layout_width="fill_parent"
+		android:layout_height="wrap_content"/>
+
+
+</LinearLayout>

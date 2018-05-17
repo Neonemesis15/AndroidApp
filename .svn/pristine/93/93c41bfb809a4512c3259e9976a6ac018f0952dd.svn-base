@@ -1,0 +1,783 @@
+package com.org.seratic.lucky;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.StringTokenizer;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.text.Html;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.org.seratic.lucky.accessData.SQLiteDatabaseAdapter;
+import com.org.seratic.lucky.accessData.control.E_MstIncidenciaController;
+import com.org.seratic.lucky.accessData.control.E_ServicioController;
+import com.org.seratic.lucky.accessData.control.E_TblMovReporteCabController;
+import com.org.seratic.lucky.accessData.control.E_tbl_mov_fotosController;
+import com.org.seratic.lucky.accessData.control.ReportesController;
+import com.org.seratic.lucky.accessData.control.TblMstProductoController;
+import com.org.seratic.lucky.accessData.entities.E_ReporteIncidencia;
+import com.org.seratic.lucky.accessData.entities.E_TblMovReporteCab;
+import com.org.seratic.lucky.manager.DatosManager;
+import com.org.seratic.lucky.manager.TiposReportes;
+
+public class ReporteIncidencia extends Activity {
+
+	private List<Object> elementos;
+
+	private SQLiteDatabase db;
+	private int idCabecera = 0;
+	private HashMap<String, ArrayList<Object>> datosReporte;
+	private ArrayList<Object> datosFila;
+	private LayoutInflater inflator;
+	private Button save;
+	private boolean infoRelevada;
+	private List<HashMap<String, String>> datosAnterioresList;
+	private Boolean reporteCambio = false;
+	private static final int ALERT_GUARDAR = 1;
+	private static final int ALERT_GUARDAR_DATOS_ANTERIORES = 2;
+	private boolean presBotonGuardar = false;
+	private SharedPreferences preferences;
+	private int tipoIncidencia;
+
+	
+	DatosManager dm;
+	ReportesController reporteController;
+	E_TblMovReporteCabController cabeceraController;
+	private String keyReporte;
+
+	private static int TAKE_PICTURE = 1;
+	int code = TAKE_PICTURE;
+	TableRow filaCambiar;
+	int index_filaCambiar;
+	int colorFila = 0;
+	int colorFilaSeleccion = 0;
+	private E_ReporteIncidencia reporte;
+	boolean reinicio = false;
+	private String prefDetalles;
+	TableLayout table;
+	int numElementos = 0;
+	SharedPreferences preferencesNavegacion;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.ly_reporte_incidencia_sanfernando_aavv_head);
+		Log.i("", "onCreate(Reporte Inicidencia)");
+		SQLiteDatabaseAdapter aSQLiteDatabaseAdapter = SQLiteDatabaseAdapter.getInstance(this);
+		db = aSQLiteDatabaseAdapter.getWritableDatabase();
+		table = (TableLayout) findViewById(R.id.tl_reporte_incidencia_sanfernando_aavv);
+
+		colorFila = getResources().getColor(R.color.azulclaro);
+		colorFilaSeleccion = getResources().getColor(R.color.fucsiaSeleccion);
+
+		TextView subReporte = (TextView) this.findViewById(R.id.txtSubreporte);
+
+		dm = DatosManager.getInstancia();
+		if (dm.getUsuario() == null) {
+			DatosManager instanciaDM = (DatosManager) getLastNonConfigurationInstance();
+			if (instanciaDM == null) {
+				Log.i("Reporte Incidencia", "Instancia recuperada Null");
+				DatosManager.getInstancia().cargarDatos(db);
+			} else {
+				DatosManager.setInstancia(instanciaDM);
+			}
+		}
+		Bundle extras = getIntent().getExtras();
+		if (extras != null) {
+			idCabecera = extras.getInt("idCabecera");
+
+		}
+		inflator = LayoutInflater.from(ReporteIncidencia.this);
+		save = (Button) findViewById(R.id.guardar);
+
+		reporteController = new ReportesController(db);
+		cabeceraController = new E_TblMovReporteCabController(db);
+
+		save.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				Boolean isReporteCambio = isReporteCambio();
+				if (isReporteCambio != null) {
+					if (isReporteCambio.booleanValue()) {
+						showDialog(ALERT_GUARDAR);
+					} else {
+						showDialog(ALERT_GUARDAR_DATOS_ANTERIORES);
+					}
+				} else {
+					Toast.makeText(ReporteIncidencia.this,"No se ha relevado información", Toast.LENGTH_SHORT).show();
+				}
+				save.setEnabled(true);
+			}
+		});
+
+		//tipoSubReporte = TiposReportes.getInstancia(this).getIDSubReportefromMap(keyReporte);
+		subReporte.setText(dm.getPuntoVentaSeleccionado().getRazonSocial());
+
+		preferences = getSharedPreferences("ReporteIncidencia", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		preferencesNavegacion = getSharedPreferences("Navegacion", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		reinicio = preferences.getBoolean("reinicio", false);
+		prefDetalles = preferences.getString("detalles", "");
+		cargarDatosReporte();
+	}
+
+	public void cargarDatosReporte() {
+		// Editor edit = preferences.edit();
+		if (!reinicio) {
+			// edit.clear();
+			showFlujoNormal();
+		} else {
+			// edit.remove("reinicio");
+			//recuperarFoto();
+			showFlujoReinicio();
+		}
+		// edit.commit();
+		if (elementos != null && (numElementos = elementos.size()) > 0) {
+			datosReporte = new HashMap<String, ArrayList<Object>>();
+			for (int i = 0; i < numElementos; i++) {
+				index_filaCambiar = i;
+				final E_ReporteIncidencia mA = (E_ReporteIncidencia) elementos.get(i);
+				datosFila = new ArrayList<Object>();
+				TableRow row = (TableRow) inflator.inflate(
+						R.layout.ly_reporte_incidencia_sanfernando_aavv_body, null);
+				String key = null;
+				;
+				((TextView) row.findViewById(R.id.tv_sku)).setText(mA.getCod_incidencia());
+				key = mA.getCod_incidencia();
+				
+				final CheckBox ck_marcar = (CheckBox) row
+						.findViewById(R.id.ck_marcar);
+				datosFila.add(ck_marcar);
+
+				CheckBox ck_foto = (CheckBox) row.findViewById(R.id.ck_foto);
+				datosFila.add(ck_foto);
+
+				if (mA.getValor_incidencia() != null
+						&& mA.getValor_incidencia().equals("1")) {
+					ck_marcar.setChecked(true);
+				}
+				ck_marcar.invalidate();
+				ck_marcar.setSelected(true);
+
+				if (mA.getId_foto() > 0) {
+					ck_foto.setChecked(true);
+				}
+				ck_foto.invalidate();
+				ck_foto.setSelected(true);
+
+				datosReporte.put(key, datosFila);
+				createRow(table, row, ck_marcar, ck_foto, i, true, Html.fromHtml(mA.getDescripcion()).toString());
+			}
+
+		} else {
+			Toast.makeText(ReporteIncidencia.this, "No hay incidencias registradas para este reporte", Toast.LENGTH_SHORT).show();
+		}
+	}
+
+	private void showFlujoNormal() {
+		/*
+		 * switch (tipoSubReporte) { case
+		 * TiposReportes.TIPO_INCIDENCIA_SF_PRODUCTOS: elementos = (new
+		 * TblMstProductoController
+		 * (db)).getElementsForIncidenciaGrid(idCabecera); break; case
+		 * TiposReportes.TIPO_INCIDENCIA_SF_SERVICIOS: elementos = (new
+		 * E_ServicioController(db)).getElementsForIncidenciaGrid(idCabecera);
+		 * break; default: break; }
+		 */
+		elementos = (new E_MstIncidenciaController(db)).getElementsForIncidenciaGrid(idCabecera, getTipoIncidencia());
+
+	}
+
+	private int getTipoIncidencia() {
+		tipoIncidencia = TiposReportes.MST_TIPO_INC_SINTIPO;
+		String codSubreporte_s = cabeceraController.getByIdCabecera(idCabecera).getCod_subreporte();
+		int codSubreporte = 0;
+		try {
+			codSubreporte = Integer.parseInt(codSubreporte_s);
+		} catch (Exception ex) {
+		}
+		switch (codSubreporte) {
+		case TiposReportes.COD_SUBREP_INC_PROD_TRADCHIK:
+			tipoIncidencia = TiposReportes.MST_TIPO_INC_PROD;
+			break;
+		case TiposReportes.COD_SUBREP_INC_SERV_TRADCHIK:
+			tipoIncidencia = TiposReportes.MST_TIPO_INC_SERV;
+			break;
+		}
+		return tipoIncidencia;
+	}
+
+	private void showFlujoReinicio() {
+		Log.i("Reporte Incidencia", "en showFlujoReinicio");
+		if (prefDetalles != null && !prefDetalles.isEmpty()) {
+			elementos = new ArrayList<Object>();
+			StringTokenizer tokenizer = new StringTokenizer(prefDetalles, "&");
+			while (tokenizer.hasMoreTokens()) {
+				try {
+					String fila = tokenizer.nextToken();
+					StringTokenizer tokenFila = new StringTokenizer(fila, "%");
+					String temp = null;
+					reporte = new E_ReporteIncidencia();
+					temp = tokenFila.nextToken();
+					if (temp == null || temp.isEmpty() || temp.equalsIgnoreCase("null")) {
+						temp = null;
+					}
+					reporte.setCod_incidencia(temp);
+					temp = tokenFila.nextToken();
+					if (temp == null || temp.isEmpty() || temp.equalsIgnoreCase("null")) {
+						temp = null;
+					}
+					reporte.setDescripcion(temp);
+					temp = tokenFila.nextToken();
+					if (temp == null || temp.isEmpty() || temp.equalsIgnoreCase("null")) {
+						temp = null;
+					}
+					reporte.setValor_incidencia(temp);
+					temp = tokenFila.nextToken();
+					if (temp == null || temp.isEmpty() || temp.equalsIgnoreCase("null")) {
+						temp = null;
+					}
+					reporte.setHasFoto(Boolean.valueOf(temp));
+					temp = tokenFila.nextToken();
+					if (temp == null || temp.isEmpty() || temp.equalsIgnoreCase("null")) {
+						temp = "0";
+					}
+					reporte.setId_foto(Integer.parseInt(temp));
+					temp = tokenFila.nextToken();
+					if (temp == null || temp.isEmpty() || temp.equalsIgnoreCase("null")) {
+						temp = null;
+					}
+					reporte.setCod_tipo_incidencia(temp);
+					temp = tokenFila.nextToken();
+					if (temp == null || temp.isEmpty() || temp.equalsIgnoreCase("null")) {
+						temp = null;
+					}
+					reporte.setComentario(temp);
+
+				} catch (Exception ex) {
+
+				}
+				elementos.add(reporte);
+			}
+		}
+	}
+
+	private String stringify() {
+		StringBuilder sb = new StringBuilder();
+		for (Object elemento : elementos) {
+			E_ReporteIncidencia elem = (E_ReporteIncidencia) elemento;
+			sb.append(elem.getCod_incidencia()).append("%");
+			sb.append(elem.getDescripcion()).append("%");
+			sb.append(elem.getValor_incidencia()).append("%");
+			sb.append(elem.isHasFoto()).append("%");
+			sb.append(elem.getId_foto()).append("%");
+			sb.append(elem.getCod_tipo_incidencia()).append("%");
+			sb.append(elem.getComentario()).append("&");
+		}
+		String det = sb.substring(0, sb.length() - 1);
+		Log.i("Reporte Inciencias", "detalles guardados en preferences" + det);
+		return det;
+	}
+
+	public static final int COLUMN_EDITABLE_0 = 0;
+	public static final int COLUMN_EDITABLE_1 = 1;
+	public static final int COLUMN_EDITABLE_2 = 2;
+
+	public boolean setDatosIncidenciaSanFernandoGuardar(
+			E_ReporteIncidencia elemento) {
+		boolean hayCambio = false;
+		ArrayList<Object> arr = null;
+		Log.i("ReportesIncidencia", "... setDatosIncidenciaAAVVSanFdoGuardar. codIncidencia = " + elemento.getCod_incidencia());
+		arr = datosReporte.get(elemento.getCod_incidencia());
+
+		/*
+		 * switch(tipoSubReporte){ case
+		 * TiposReportes.TIPO_INCIDENCIA_SF_PRODUCTOS:
+		 * Log.i("ReportesIncidencia",
+		 * "... setDatosSodAlicorpMayoristasGuardar. codSKU = " +
+		 * elemento.getCod_producto()); arr =
+		 * datosReporte.get(elemento.getCod_producto()); break;
+		 * 
+		 * case TiposReportes.TIPO_INCIDENCIA_SF_SERVICIOS:
+		 * Log.i("ReportesIncidencia",
+		 * "... setDatosSodAlicorpMayoristasGuardar. codSKU = " +
+		 * elemento.getCod_servicio()); arr =
+		 * datosReporte.get(elemento.getCod_servicio()); break; }
+		 */
+		if (arr != null) {
+
+			int idFoto = elemento.getId_foto();
+			int estadoCabecera = -1;
+			if (elemento.getId_reporte_cab() != 0) {
+				estadoCabecera = cabeceraController.getByIdCabecera(elemento.getId_reporte_cab()).getEstado_envio();
+			}
+			CheckBox ck_marque = (CheckBox) arr.get(COLUMN_EDITABLE_0);
+			boolean isMarque = ck_marque.isChecked();
+			CheckBox ck_foto = (CheckBox) arr.get(COLUMN_EDITABLE_1);
+			boolean isFoto = ck_foto.isChecked();
+
+			if (elemento.getValor_incidencia() == null) {
+				if (isMarque)
+					hayCambio = true;
+			} else {
+				if (estadoCabecera == E_TblMovReporteCab.ESTADO_TEMPORAL) {
+					hayCambio = true;
+				} else {
+					if (elemento.getValor_incidencia().equals("1")) {
+						if (!isMarque)
+							hayCambio = true;
+					} else {
+						if (isMarque)
+							hayCambio = true;
+					}
+				}
+			}
+
+			if (elemento.isHasFoto() == null) {
+				if (isFoto)
+					hayCambio = true;
+			} else {
+				if (estadoCabecera == E_TblMovReporteCab.ESTADO_TEMPORAL) {
+					if (isFoto)
+						idFoto = elemento.getId_foto();
+					hayCambio = true;
+				} else {
+					if (elemento.isHasFoto().booleanValue()) {
+						if (!isFoto)
+							hayCambio = true;
+					} else {
+						if (isFoto)
+							idFoto = elemento.getId_foto();
+						hayCambio = true;
+					}
+				}
+			}
+
+			if (isMarque && !infoRelevada) {
+				infoRelevada = true;
+			}
+			if (idFoto > 0 && !infoRelevada) {
+				infoRelevada = true;
+			}
+
+			HashMap<String, String> datosAnteriores = new HashMap<String, String>();
+			datosAnteriores.put("valor_incidencia", elemento.getHasPedido());
+			datosAnteriores.put("id_foto", String.valueOf(elemento.getId_foto()));
+			datosAnteriores.put("comentario", elemento.getComentario());
+			datosAnterioresList.add(datosAnteriores);
+
+			if (hayCambio) {
+				elemento.setValor_incidencia(isMarque ? "1" : "0");
+				elemento.setHasFoto(isFoto);
+				elemento.setHayCambio(true);
+			}
+		}
+
+		Log.i("ReportesIncidencia", "setDatosIncidenciaSanFernandoGuardar. hayCambio = " + hayCambio);
+		return hayCambio;
+	}
+
+	public void createRow(TableLayout table, TableRow row, CheckBox ck1, CheckBox ck2, final int index, boolean ini, final String textSubtitulo) {
+		int colorFila = ReporteIncidencia.this.getResources().getColor(R.color.azulclaro);
+		if (ini) {
+			ini = false;
+		}
+		if (index % 2 == 0) {
+			row.setBackgroundColor(colorFila);
+		} else {
+			row.setBackgroundColor(Color.WHITE);
+		}
+
+		if (ck1 != null) {
+			ck1.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+				public void onCheckedChanged(CompoundButton v, boolean isChecked) {
+					onClickFila(v, textSubtitulo);
+					Log.i("Reporte incidencias", "click en pedido con index: "+ index);
+				}
+			});
+		}
+
+		if (ck2 != null) {
+			ck2.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+				public void onCheckedChanged(CompoundButton v, boolean isChecked) {
+					onClickFila(v, textSubtitulo);
+					Log.i("Reporte incidencias", "click en pedido con index: " + index);
+					if (isChecked) {
+						Editor edit = preferences.edit();
+						// String detallesConcatenados = null;
+						Boolean reporteCambio = isReporteCambio();
+						Log.i("ReporteIncidencias isReporteCambio", String.valueOf(reporteCambio));
+						// for (String s : datosReporteTemp.keySet()) {
+						// for(String det: datosReporteTemp.get(s)){
+						// edit.putString(s, det);
+						// }
+						// }
+						edit.remove("detalles");
+						edit.commit();
+						// setDatosSodAlicorpMayoristasInHashMap();
+						Log.i("ReporteIncidencias isReporteCambio", String.valueOf(reporteCambio));
+						edit.putBoolean("reinicio", true);
+						edit.putString("detalles", stringify());
+						edit.putInt("index", index);
+						edit.commit();
+						Intent intent = new Intent(ReporteIncidencia.this, ReporteFotoIncidencia.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						intent.putExtra("idCabecera", idCabecera);
+						intent.putExtra("codigoElemento", ((E_ReporteIncidencia) elementos.get(index)) .getCod_incidencia());
+						intent.putExtra("index", index);
+						/*
+						 * switch(tipoSubReporte){ case
+						 * TiposReportes.TIPO_INCIDENCIA_SF_PRODUCTOS:
+						 * intent.putExtra("codigoElemento",
+						 * ((E_ReporteIncidencia)
+						 * elementos.get(index)).getCod_producto()); break;
+						 * 
+						 * case TiposReportes.TIPO_INCIDENCIA_SF_SERVICIOS:
+						 * intent.putExtra("codigoElemento",
+						 * ((E_ReporteIncidencia)
+						 * elementos.get(index)).getCod_servicio()); break; }
+						 */
+						intent.putExtra("subreporte", "Incidencia");
+						startActivityForResult(intent, 1);
+					} else {
+						if (((E_ReporteIncidencia) elementos.get(index)).getId_foto() > 0) {
+							E_tbl_mov_fotosController fotosController = new E_tbl_mov_fotosController(db);
+							fotosController.borrar(((E_ReporteIncidencia) elementos.get(index)).getId_foto());
+						}
+						((E_ReporteIncidencia) elementos.get(index)).setId_foto(0);
+						((E_ReporteIncidencia) elementos.get(index)).setComentario(null);
+					}
+				}
+			});
+		}
+
+		row.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				onClickFila(v, textSubtitulo);
+			}
+		});
+
+		// Add the TableRow to the TableLayout
+		table.addView(row, new TableLayout.LayoutParams(
+				LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+	}
+
+	private void onClickFila(View v, String textSubtitulo) {
+		// TableRow filaReporte = (TableRow) v;
+		// String codMaterial = ((TextView) filaReporte
+		// .findViewById(R.id.tv_codigo)).getText().toString();
+		TextView tvSubtitulo = (TextView) findViewById(R.id.tv_subtitulo);
+		tvSubtitulo.setText(textSubtitulo);
+	}
+
+	private Boolean fijarDatosCambiados() {
+		Boolean res = null;
+		infoRelevada = false;
+		if (elementos != null) {
+			datosAnterioresList = new ArrayList<HashMap<String, String>>();
+			for (Object elementV : elementos) {
+				Boolean c = null;
+				c = setDatosIncidenciaSanFernandoGuardar((E_ReporteIncidencia) elementV);
+
+				if (res == null) {
+					res = c;
+				} else {
+					if (c != null) {
+						res = res || c;
+					}
+				}
+			}
+			if (!infoRelevada) {
+				res = null;
+			}
+		}
+		return res;
+	}
+
+	public Boolean isReporteCambio() {
+		reporteCambio = fijarDatosCambiados();
+		Log.i("ReportesGrillaActivity", "... isReporteCambio() = " + reporteCambio);
+		return reporteCambio;
+	}
+
+	public void setReporteCambio(boolean reporteCambio) {
+		// TODO Auto-generated method stub
+		this.reporteCambio = reporteCambio;
+		if (!reporteCambio) {
+			revertirDatosCambiados();
+		}
+	}
+
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		// TODO Auto-generated method stub
+		Dialog dialog = null;
+		AlertDialog.Builder builder = new AlertDialog.Builder(ReporteIncidencia.this);
+		switch (id) {
+
+		case ALERT_GUARDAR:
+
+			builder = new AlertDialog.Builder(ReporteIncidencia.this);
+			String textoGuardar = getString(R.string.reportes_itt_guardar_alert) + " Incidencia ?";
+
+			builder.setMessage(textoGuardar)
+					.setCancelable(true)
+					.setNegativeButton(R.string.textNo,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int id) {
+									presBotonGuardar = false;
+									setReporteCambio(false);
+									dialog.dismiss();
+								}
+							})
+					.setPositiveButton(R.string.textSi,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int id) {
+									Log.i("ReporteGeneral", "GuardandoCabecera con ID" + idCabecera);
+									String msg = guardar(idCabecera);
+									if (msg.equalsIgnoreCase("")) {
+										DatosManager.getInstancia().actualizarCabecera(idCabecera, db);
+										DatosManager.getInstancia().setGuardoReporte(true);
+										String resultadoGuardar = "Reporte Guardado Exitosamente";
+
+										Toast.makeText(ReporteIncidencia.this, resultadoGuardar, Toast.LENGTH_SHORT).show();
+										presBotonGuardar = true;
+									} else {
+										Toast.makeText(ReporteIncidencia.this, msg, Toast.LENGTH_SHORT).show();
+									}
+								}
+							});
+			dialog = builder.create();
+
+			break;
+
+		case ALERT_GUARDAR_DATOS_ANTERIORES:
+
+			builder = new AlertDialog.Builder(ReporteIncidencia.this);
+
+			builder.setMessage(
+					getString(R.string.reportes_itt_guardar_alert) + "sin realizar modificaciones?")
+					.setCancelable(true)
+					.setNegativeButton(R.string.textNo,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int id) {
+									setReporteCambio(false);
+									dialog.dismiss();
+								}
+							})
+					.setPositiveButton(R.string.textSi,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int id) {
+
+									Log.i("ReporteSOD", "GuardandoCabecera con ID" + idCabecera);
+									String msg = guardar(idCabecera);
+									if (msg.equalsIgnoreCase("")) {
+										DatosManager.getInstancia().actualizarCabecera(idCabecera,db);
+										DatosManager.getInstancia().setGuardoReporte(true);
+										String resultadoGuardar = "Reporte Guardado Exitosamente";
+
+										Toast.makeText(ReporteIncidencia.this, resultadoGuardar,Toast.LENGTH_SHORT).show();
+										presBotonGuardar = true;
+										finish();
+									} else {
+										Toast.makeText(ReporteIncidencia.this, msg, Toast.LENGTH_SHORT).show();
+									}
+
+								}
+							});
+			dialog = builder.create();
+
+			break;
+
+		}
+		return dialog;
+	}
+
+	public String validarDatos() {
+		String msg = "";
+		boolean isValido = true;
+		for (Object elemento : elementos) {
+			E_ReporteIncidencia rep = (E_ReporteIncidencia) elemento;
+			if (rep.getId_foto() > 0 && rep.getValor_incidencia() != null && rep.getValor_incidencia().equalsIgnoreCase("0")) {
+				isValido &= false;
+				msg += "Debe checkear la incidencia para guardar el reporte";
+			}
+			if (!isValido) {
+				break;
+			}
+		}
+		return msg;
+	}
+
+	private boolean revertirDatosCambiados() {
+		boolean res = false;
+		if (elementos != null) {
+			for (int i = 0; i < elementos.size(); i++) {
+				Object elementV = elementos.get(i);
+				if (i < datosAnterioresList.size()) {
+					HashMap<String, String> datosAnteriores = datosAnterioresList.get(i);
+					((E_ReporteIncidencia) elementV).setId_foto(Integer.parseInt(datosAnteriores.get("id_foto")));
+					((E_ReporteIncidencia) elementV).setValor_incidencia(datosAnteriores.get("valor_incidencia"));
+				}
+			}
+		}
+		return res;
+	}
+
+	public String guardar(int idCabeceraGuardada) {
+		String msg = "";
+		msg = validarDatos();
+		if (msg.trim().isEmpty()) {
+			guardarReporte();
+		}
+		return msg;
+	}
+
+	public void guardarReporte() {
+		for (Object elementV : elementos) {
+			E_ReporteIncidencia rep = (E_ReporteIncidencia) elementV;
+			rep.setId_reporte_cab(idCabecera);
+			reporteController.insert_update_ReporteIncidencia(rep, TiposReportes.TIPO_INCIDENCIA_SF_AAVV);
+		}
+		SharedPreferences prefReporteGral = getSharedPreferences("ReporteGeneral", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		Editor editor = prefReporteGral.edit();
+		editor.putBoolean("flujo_normal", true);
+		editor.commit();
+		Editor edit = preferences.edit();
+		edit.clear();
+		edit.commit();
+		String keyReportes = preferencesNavegacion.getString("keyReportes", "");
+		DatosManager.getInstancia().clearNaveKey(ReporteIncidencia.this, keyReportes);
+		finish();
+	}
+	
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Log.i("ReporteIncidencia", "onActivityResult()");
+		SharedPreferences p = getSharedPreferences("ReporteFotoIncidencia", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		if (p != null) {
+			int id_foto = p.getInt("idFoto", 0);
+			String comentario = p.getString("comentario", null);
+			int codeResult = p.getInt("resultCode", 0);
+			int index = preferences.getInt("index", 0);
+			prefDetalles = preferences.getString("detalles", null);
+			showFlujoReinicio();
+			((E_ReporteIncidencia) elementos.get(index)).setId_foto(id_foto);
+			((E_ReporteIncidencia) elementos.get(index)).setComentario(comentario);
+			((E_ReporteIncidencia) elementos.get(index)).setHayCambio(true);
+			if (codeResult == RESULT_OK) {
+				if (id_foto > 0) {
+					((E_ReporteIncidencia) elementos.get(index)).setHasFoto(true);
+				} else {
+					((E_ReporteIncidencia) elementos.get(index)).setHasFoto(false);
+				}
+			} else {
+				((E_ReporteIncidencia) elementos.get(index)).setHasFoto(false);
+			}
+			SharedPreferences prefReporteGral = getSharedPreferences("ReporteGeneral", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+			Editor editor = prefReporteGral.edit();
+			editor.putBoolean("flujo_normal", false);
+			editor.commit();
+			Editor edit = preferences.edit();
+			edit.putBoolean("reinicio", true);
+			edit.putInt("idCabecera", idCabecera);
+			edit.putString("detalles", stringify());
+			edit.commit();
+			finish();
+		}
+	}
+
+	@Override
+	public void onBackPressed() {
+		final String keyReportes = preferencesNavegacion.getString("keyReportes", "");
+		Boolean reporteCambio = isReporteCambio();
+		if (reporteCambio != null) {
+			if (reporteCambio.booleanValue()) {
+				// System.out.println("isReporteCambio() true");
+				// hay un cambio en la informacion
+				if (!presBotonGuardar) {
+					// Hay cambios y no se ha guardado
+					// System.out.println("Hay cambios y no se ha guardado");
+
+					AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+					alertDialog.setTitle("Retornar");
+					alertDialog.setMessage("¿Desea retornar sin guardar los datos registrados?");
+					alertDialog.setButton("Si",
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,int which) {
+									SharedPreferences prefReporteGral = getSharedPreferences("ReporteGeneral",MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+									Editor editor = prefReporteGral.edit();
+									editor.putBoolean("flujo_normal", true);
+									editor.commit();
+									Editor edit = preferences.edit();
+									edit.clear();
+									edit.commit();
+									DatosManager.getInstancia().clearNaveKey(ReporteIncidencia.this,keyReportes);
+									finish();
+								}
+							});
+					alertDialog.setButton2("No",
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,int which) {
+									setReporteCambio(false);
+								}
+							});
+					alertDialog.show();
+
+				} else {
+					SharedPreferences prefReporteGral = getSharedPreferences("ReporteGeneral", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+					Editor editor = prefReporteGral.edit();
+					editor.putBoolean("flujo_normal", true);
+					editor.commit();
+					Editor edit = preferences.edit();
+					edit.clear();
+					edit.commit();
+					DatosManager.getInstancia().clearNaveKey(ReporteIncidencia.this, keyReportes);
+					finish();
+				}
+			} else {
+				SharedPreferences prefReporteGral = getSharedPreferences("ReporteGeneral", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+				Editor editor = prefReporteGral.edit();
+				editor.putBoolean("flujo_normal", true);
+				editor.commit();
+				Editor edit = preferences.edit();
+				edit.clear();
+				edit.commit();
+				DatosManager.getInstancia().clearNaveKey(ReporteIncidencia.this, keyReportes);
+				finish();
+			}
+		} else {
+			SharedPreferences prefReporteGral = getSharedPreferences("ReporteGeneral", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+			Editor editor = prefReporteGral.edit();
+			editor.putBoolean("flujo_normal", true);
+			editor.commit();
+			Editor edit = preferences.edit();
+			edit.clear();
+			edit.commit();
+			DatosManager.getInstancia().clearNaveKey(ReporteIncidencia.this, keyReportes);
+			finish();
+		}
+	}
+}

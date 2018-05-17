@@ -1,0 +1,114 @@
+package com.org.seratic.lucky.accessData.entities;
+
+public class E_ReporteMarcajePrecio extends Entity {
+
+	private int id;
+	private int cod_reporte_cab;
+	private String cod_marcaje;
+	private String cantidad;
+	private int id_foto;
+	private String comentario;
+	private String cod_motivo;
+	private String descripcion;
+	private boolean hayCambio;
+	private Boolean hasFoto;
+
+	
+	public E_ReporteMarcajePrecio() {
+	}
+
+	public E_ReporteMarcajePrecio(int cod_reporte_cab, String cod_marcaje, String cantidad, int id_foto, String comentario) {
+		this.cod_marcaje = cod_marcaje;
+		this.cod_reporte_cab = cod_reporte_cab;
+		this.cantidad = cantidad;
+		this.id_foto = id_foto;
+		this.comentario = comentario;
+	}
+
+	public E_ReporteMarcajePrecio(int cod_reporte_cab, String cod_motivo) {
+		this.cod_motivo = cod_motivo;
+		this.cod_reporte_cab = cod_reporte_cab;
+	}
+
+	public String getCantidad() {
+		return cantidad;
+	}
+
+	public String getCod_marcaje() {
+		return cod_marcaje;
+	}
+
+	public String getCod_motivo() {
+		return cod_motivo;
+	}
+
+	public int getCod_reporte_cab() {
+		return cod_reporte_cab;
+	}
+
+	public String getComentario() {
+		return comentario;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public int getId_foto() {
+		return id_foto;
+	}
+
+	public void setCantidad(String cantidad) {
+		this.cantidad = cantidad;
+	}
+
+	public void setCod_marcaje(String cod_marcaje) {
+		this.cod_marcaje = cod_marcaje;
+	}
+
+	public void setCod_motivo(String cod_motivo) {
+		this.cod_motivo = cod_motivo;
+	}
+
+	public void setCod_reporte_cab(int cod_reporte_cab) {
+		this.cod_reporte_cab = cod_reporte_cab;
+	}
+
+	public void setComentario(String comentario) {
+		this.comentario = comentario;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public void setId_foto(int id_foto) {
+		this.id_foto = id_foto;
+	}
+
+	public String getDescripcion() {
+		return descripcion;
+	}
+
+	public void setDescripcion(String descripcion) {
+		this.descripcion = descripcion;
+	}
+
+	public boolean isHayCambio() {
+		return hayCambio;
+	}
+
+	public void setHayCambio(boolean hayCambio) {
+		this.hayCambio = hayCambio;
+	}
+
+	public Boolean getHasFoto() {
+		return hasFoto;
+	}
+
+	public void setHasFoto(Boolean hasFoto) {
+		this.hasFoto = hasFoto;
+	}
+	
+	
+}

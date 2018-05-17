@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tr_reporte_estrella_sanfernando_aavv"
+    android:layout_width="fill_parent"
+    android:layout_height="25dp" >
+
+    <TextView
+        android:id="@+id/tv_cod"
+        style="@style/TextoBodyGrilla2"
+        android:width="60dp" />   
+
+    <TextView
+        android:id="@+id/tv_valor"
+        style="@style/TextoBodyGrilla2"        
+        android:singleLine="true"
+        android:width="110dp" />
+
+</TableRow>

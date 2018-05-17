@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" 
+    android:background="@drawable/fondo2"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp">
+
+
+ <TextView 
+        android:text="@string/titulo_registro"
+		style="@style/Titulo"/>
+
+<!-- 
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <LinearLayout
+            android:id="@+id/estadoRegistrosLayout"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical" >
+        </LinearLayout>
+
+    </ScrollView>
+ -->
+     <ListView
+        android:id="@+id/subestadoLV"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+    </ListView>
+</LinearLayout>

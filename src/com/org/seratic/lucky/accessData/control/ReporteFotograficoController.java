@@ -1,0 +1,118 @@
+package com.org.seratic.lucky.accessData.control;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
+import com.org.seratic.lucky.accessData.entities.E_TblMovRegistroFotografico;
+import com.org.seratic.lucky.accessData.entities.Entity;
+import com.org.seratic.lucky.manager.DatosManager;
+
+public class ReporteFotograficoController extends EntityController {
+	private SQLiteDatabase db;
+	private Cursor dbCursor;
+
+	public ReporteFotograficoController(SQLiteDatabase db) {
+		super();
+		this.db = db;
+	}
+	
+	public int createR(E_TblMovRegistroFotografico e) {
+		//Creamos el registro a insertar como objeto ContentValues
+		ContentValues nuevoRegistro = new ContentValues();
+		Log.i("*",". createR. Creando Registro Foto para idCabecera = "+e.getId_reporte_cab());
+		//
+		nuevoRegistro.put("id_reporte_cab",e.getId_reporte_cab());
+		nuevoRegistro.put("idFoto", e.getIdFoto());
+		
+		 
+		//Insertamos el registro en la base de datos
+		long rowid = db.insert("TBL_MOV_REP_FOTOGRAFICO",DatosManager.DATABASE_NAME, nuevoRegistro);
+		
+		String sql = "SELECT id FROM TBL_MOV_REP_FOTOGRAFICO WHERE rowid = "+rowid;
+		dbCursor = db.rawQuery(sql, null);
+		dbCursor.moveToFirst();
+		int id = dbCursor.getInt(0);
+		Log.i("Creando Registro Foto para idCabecera",""+e.getId_reporte_cab()+". Resultado idFoto"+id);
+		//
+		
+		return id;
+	}
+
+
+	@Override
+	public boolean create(Entity e) {
+		return false;
+	}
+
+	@Override
+	public boolean edit(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean remove(Entity e) {
+		E_TblMovRegistroFotografico f = (E_TblMovRegistroFotografico) e;
+		try {
+			db.delete("TBL_MOV_REP_FOTOGRAFICO", "idFoto = ?",
+					new String[] { String.valueOf(f.getIdFoto()) });
+			return true;
+		} catch (Exception ex) {
+			return false;
+		}
+	}
+
+	@Override
+	public List<Entity> getAll() {
+/*		List<Entity> reporteFotografico = new ArrayList<Entity>();
+
+		dbCursor = db.rawQuery(
+						"SELECT id, idUsuario, idPuntoVenta,idFiltro,comentario,nombreImg,idPuntoGps,estado,envioFoto FROM TBL_MOV_RPTE_FOTOGRAFICO ORDER BY idUsuario",
+						null);
+		dbCursor.moveToFirst();
+
+		while (!dbCursor.isAfterLast()) {
+			int id = dbCursor.getInt(0);
+			int idUsuario = dbCursor.getInt(1);
+			int idPuntoVenta = dbCursor.getInt(2);
+			int idFiltro = dbCursor.getInt(3);
+			String comentario = dbCursor.getString(4);
+			String nombreImg = dbCursor.getString(5);
+			int idPuntoGPS = dbCursor.getInt(6);
+			int estado = dbCursor.getInt(7);
+			int envioFoto = dbCursor.getInt(8);
+			E_ReporteFotografico e_ReporteFotografico = new E_ReporteFotografico(id,idUsuario, idPuntoVenta, idFiltro, comentario, nombreImg, idPuntoGPS, estado, envioFoto); 
+			reporteFotografico.add(e_ReporteFotografico);
+			dbCursor.moveToNext();
+		}
+
+		// return usuarios;
+		return reporteFotografico;*/
+		return null;
+	}
+	
+	public List<E_TblMovRegistroFotografico> getByIdRepCab(int idRepCab) {
+		List<E_TblMovRegistroFotografico> movRepFotograficoList = null;
+		String sql = "SELECT id_reporte_cab, idFoto FROM TBL_MOV_REP_FOTOGRAFICO WHERE id_reporte_cab = '" + idRepCab + "'";
+		Log.i("SQL", sql);	
+		dbCursor = db.rawQuery(sql, null);
+		if (dbCursor.getCount() > 0) {
+			dbCursor.moveToFirst();
+			movRepFotograficoList = new ArrayList<E_TblMovRegistroFotografico>();
+			while(!dbCursor.isAfterLast()){
+				E_TblMovRegistroFotografico movRepFotografico = new E_TblMovRegistroFotografico(); 
+				movRepFotografico.setId_reporte_cab(dbCursor.getInt(0));
+				movRepFotografico.setIdFoto(dbCursor.getInt(1));
+				movRepFotograficoList.add(movRepFotografico);
+				dbCursor.moveToNext();
+			}
+		}				
+		return movRepFotograficoList;
+	}
+	
+}

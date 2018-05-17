@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tr_reporte_presencia_cluster"
+    style="@style/BodyGrilla" >
+
+<!--     <TextView -->
+<!--         android:id="@+id/tv_codigo" -->
+<!--         style="@style/TextoBodyGrilla" -->
+<!--         android:layout_width="60dp" -->
+<!--     /> -->
+    
+    <TextView
+        android:id="@+id/tv_pregunta"
+        style="@style/TextoBodyGrilla"
+        android:singleLine="true"
+        android:maxWidth="150dp"
+        android:layout_width="wrap_content"
+        />
+
+
+<LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical|center_horizontal"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+         >
+
+        <CheckBox
+            android:id="@+id/ck_marque"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            
+            android:button="@drawable/checkboxstyle" />
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/et_cantidad"
+        style="@style/TextoBodyGrilla"
+        android:singleLine="true"
+        android:maxWidth="60dp"
+        android:inputType="number"/>
+
+</TableRow>

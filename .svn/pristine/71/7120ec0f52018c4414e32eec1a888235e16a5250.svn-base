@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+        clave de Eliana
+        android:apiKey="0p5yU2B5uclKVeL02IvSKaRNkl4KJoe4gAafimw"
+-->
+<com.google.android.maps.MapView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mapa"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:apiKey="0p5yU2B5uclLu6PKSe1U6otT_jcHrSV9Z2I_spA"
+    android:clickable="true" />

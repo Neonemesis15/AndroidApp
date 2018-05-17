@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/fondo2"
+    android:orientation="vertical"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    >
+
+    <TextView 
+        android:text="Autenticación"
+        style="@style/Titulo"
+        android:layout_marginBottom="40dp"/>
+    
+    
+    <LinearLayout 
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingLeft="50dp"
+        android:paddingRight="50dp" >
+
+        <TextView
+            android:id="@+id/textusuario"
+            style="@style/TextoLabel"
+            android:text="Usuario" />
+
+        <EditText
+            android:id="@+id/edit_usuario"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:inputType="text" >
+
+            <requestFocus />
+        </EditText>
+
+        <TextView
+            android:id="@+id/textpassword"
+            style="@style/TextoLabel"
+            android:layout_marginTop="8dp"
+            android:text="Contraseña" />
+
+        <EditText
+            android:id="@+id/edit_password"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:inputType="number"
+            android:maxEms="2"
+            android:password="true" />
+
+        <Button
+            android:id="@+id/botoningresar"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="23dp"
+            android:text="Ingresar" />
+        
+        <TextView
+            android:id="@+id/version"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="80dp"
+            android:paddingTop="10dp"
+            android:text="@string/versionApp"
+            android:textColor="#ffffff"
+            android:textSize="13dp"
+            android:textStyle="bold" 
+            android:gravity="right"
+            />
+    </LinearLayout>
+
+</LinearLayout>

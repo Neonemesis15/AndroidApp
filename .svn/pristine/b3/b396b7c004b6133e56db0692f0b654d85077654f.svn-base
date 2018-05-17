@@ -1,0 +1,66 @@
+package com.org.seratic.lucky.accessData.control;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+import com.org.seratic.lucky.accessData.entities.E_MovParamReporte;
+import com.org.seratic.lucky.accessData.entities.E_MstCapacitacion;
+import com.org.seratic.lucky.accessData.entities.E_TblMstOpcReporte;
+import com.org.seratic.lucky.accessData.entities.Entity;
+
+public class E_MovParamReporteController extends EntityController {
+
+	private SQLiteDatabase db;
+	private Cursor dbCursor;
+
+	public E_MovParamReporteController(SQLiteDatabase db) {
+		super();
+		this.db = db;
+	}
+
+	@Override
+	public boolean create(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean edit(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean remove(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public List<Entity> getAll() {
+		return null;
+	}
+
+	public E_MovParamReporte obtenerKey(int idReporte, int idSubreporte, String codCanal) {
+		E_MovParamReporte paramRep = new E_MovParamReporte();
+		
+		String sql = "SELECT cod_reporte, cod_subreporte, cod_canal, cod_cliente, tipo_reporte FROM TBL_MOV_PARAM_REPORTE " + "WHERE cod_reporte = " + idReporte +" AND cod_subreporte = "+idSubreporte+" AND cod_canal = '"+codCanal+"'";
+		dbCursor = db.rawQuery(sql, null);
+		if (dbCursor.getCount() > 0) {
+			dbCursor.moveToFirst();
+			paramRep.setCod_reporte(dbCursor.getInt(0));
+			paramRep.setCod_subreporte(dbCursor.getInt(1));
+			paramRep.setCod_canal(dbCursor.getString(2));
+			paramRep.setCod_cliente(dbCursor.getString(3));	
+			paramRep.setTipo_reporte(dbCursor.getInt(4));
+		}else{
+			return null;
+		}
+		return paramRep;
+	}
+
+
+}

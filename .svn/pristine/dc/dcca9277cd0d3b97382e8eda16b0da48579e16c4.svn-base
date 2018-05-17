@@ -1,0 +1,801 @@
+package com.org.seratic.lucky;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.StringTokenizer;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.os.Handler;
+import android.text.Html;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
+import android.widget.EditText;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.org.seratic.lucky.accessData.SQLiteDatabaseAdapter;
+import com.org.seratic.lucky.accessData.control.E_MstMarcajePreciosController;
+import com.org.seratic.lucky.accessData.control.E_MstMotivoReporteController;
+import com.org.seratic.lucky.accessData.control.E_ServicioController;
+import com.org.seratic.lucky.accessData.control.E_TblMovReporteCabController;
+import com.org.seratic.lucky.accessData.control.E_tbl_mov_fotosController;
+import com.org.seratic.lucky.accessData.control.ReportesController;
+import com.org.seratic.lucky.accessData.control.TblMstProductoController;
+import com.org.seratic.lucky.accessData.entities.E_ReporteCapacitacion;
+import com.org.seratic.lucky.accessData.entities.E_ReporteIncidencia;
+import com.org.seratic.lucky.accessData.entities.E_ReporteMarcajePrecio;
+import com.org.seratic.lucky.accessData.entities.E_TblMovRepMaterialDeApoyo;
+import com.org.seratic.lucky.accessData.entities.E_TblMovReporteCab;
+import com.org.seratic.lucky.manager.DatosManager;
+import com.org.seratic.lucky.manager.TiposReportes;
+
+public class ReporteMarcajePrecio extends Activity implements IReportes{
+
+	private List<Object> elementos;
+
+	private SQLiteDatabase db;
+	private int idCabecera = 0;
+	private HashMap<String, ArrayList<Object>> datosReporte;
+	private ArrayList<Object> datosFila;
+	LayoutInflater inflator;
+	Button save;
+	boolean infoRelevada;
+	private List<HashMap<String, String>> datosAnterioresList;
+	Boolean reporteCambio = false;
+	private static final int ALERT_GUARDAR = 1;
+	private static final int ALERT_GUARDAR_DATOS_ANTERIORES = 2;
+	private boolean presBotonGuardar = false;
+	private SharedPreferences preferences;
+	private TextView tvProdServ;
+	DatosManager dm;
+	ReportesController reporteController;
+	E_TblMovReporteCabController cabeceraController;
+	private static int TAKE_PICTURE = 1;
+	int code = TAKE_PICTURE;
+	TableRow filaCambiar;
+	int index_filaCambiar;
+	int colorFila = 0;
+	int colorFilaSeleccion = 0;
+
+	private E_ReporteMarcajePrecio reporte;
+	boolean reinicio = false;
+	private String prefDetalles;
+	TableLayout table;
+	int numElementos = 0;
+	SharedPreferences preferencesNavegacion;	
+	
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.ly_reporte_marcajeprecio_sanfernando_tradicional_head);
+		Log.i("", "onCreate(Reporte Marcahe Precio)");
+		tvProdServ = (TextView) findViewById(R.id.head_codigo);
+		SQLiteDatabaseAdapter aSQLiteDatabaseAdapter = SQLiteDatabaseAdapter.getInstance(this);
+		db = aSQLiteDatabaseAdapter.getWritableDatabase();
+		table = (TableLayout) findViewById(R.id.tl_reporte_marcajeprecio_sanfernando_tradicional);
+
+		colorFila = getResources().getColor(R.color.azulclaro);
+		colorFilaSeleccion = getResources().getColor(R.color.fucsiaSeleccion);
+
+		TextView subReporte = (TextView) this.findViewById(R.id.txtSubreporte);
+
+		dm = DatosManager.getInstancia();
+		if (dm.getUsuario() == null) {
+			DatosManager instanciaDM = (DatosManager) getLastNonConfigurationInstance();
+			if (instanciaDM == null) {
+				Log.i("Reporte Marcaje Precio", "Instancia recuperada Null");
+				DatosManager.getInstancia().cargarDatos(db);
+			} else {
+				DatosManager.setInstancia(instanciaDM);
+			}
+		}
+		Bundle extras = getIntent().getExtras();
+		if (extras != null) {
+			// idReporte = DatosManager.getInstancia().getIdReporte();
+			idCabecera = extras.getInt("idCabecera");
+			
+		}
+		inflator = LayoutInflater.from(ReporteMarcajePrecio.this);
+		save = (Button) findViewById(R.id.guardar);
+
+		reporteController = new ReportesController(db);
+		cabeceraController = new E_TblMovReporteCabController(db);
+
+		save.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				Boolean isReporteCambio = isReporteCambio();
+				if (isReporteCambio != null) {
+					if (isReporteCambio.booleanValue()) {
+						showDialog(ALERT_GUARDAR);
+					} else {
+						showDialog(ALERT_GUARDAR_DATOS_ANTERIORES);
+					}
+				} else {
+					Toast.makeText(ReporteMarcajePrecio.this, "No se ha relevado información", Toast.LENGTH_SHORT).show();
+				}
+				save.setEnabled(true);
+			}
+		});
+
+		subReporte.setText("Marcaje Precio");
+		preferences = getSharedPreferences("ReporteMarcajePrecios", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		reinicio = preferences.getBoolean("reinicio", false);
+		prefDetalles = preferences.getString("detalles", "");
+		cargarDatosReporte();
+		preferencesNavegacion= getSharedPreferences("Navegacion", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+	}
+
+	public void cargarDatosReporte() {
+		//Editor edit = preferences.edit();
+		if (!reinicio) {
+			//edit.clear();
+			showFlujoNormal();
+		} else {
+			//edit.remove("reinicio");
+			showFlujoReinicio();
+		}
+		//edit.commit();
+		E_ReporteMarcajePrecio rm = (new E_MstMarcajePreciosController(db)).getcodMotivobyIdRepCab(idCabecera);
+
+		if (rm != null) {
+			TextView tvSubtitulo = (TextView) this.findViewById(R.id.tv_subtitulo);
+			tvSubtitulo.setText((new E_MstMotivoReporteController(db)).getMotivoReporteByCodMotivo(Integer.parseInt(rm.getCod_motivo()), TiposReportes.COD_REP_MARCAJE_PRECIOS).getNom_motivo());
+		}
+
+		if (elementos != null && (numElementos = elementos.size()) > 0) {
+			datosReporte = new HashMap<String, ArrayList<Object>>();
+			for (int i = 0; i < numElementos; i++) {
+				index_filaCambiar = i;
+				final E_ReporteMarcajePrecio mA = (E_ReporteMarcajePrecio) elementos.get(i);
+				datosFila = new ArrayList<Object>();
+				TableRow row = (TableRow) inflator.inflate(R.layout.ly_reporte_marcajeprecio_sanfernando_tradicional_body, null);
+				((TextView) row.findViewById(R.id.tv_sku)).setText(mA.getCod_marcaje());
+
+				final EditText et_cantidad = (EditText) row.findViewById(R.id.et_cantidad);
+
+				datosFila.add(et_cantidad);
+
+				CheckBox ck_foto = (CheckBox) row.findViewById(R.id.ck_foto);
+				datosFila.add(ck_foto);
+				if (rm != null) {
+					ck_foto.setEnabled(false);
+					et_cantidad.setEnabled(false);
+					row.setEnabled(false);
+				} else {
+					et_cantidad.setText(mA.getCantidad());
+					if (mA.getId_foto() > 0) {
+						ck_foto.setChecked(true);
+					}
+				}
+				ck_foto.invalidate();
+				ck_foto.setSelected(true);
+				String key = mA.getCod_marcaje();
+				datosReporte.put(key, datosFila);
+				createRow(table, row, et_cantidad, ck_foto, i, true, mA.getDescripcion(), key);
+			}
+
+		} else {
+			Toast.makeText(ReporteMarcajePrecio.this, "No hay elementos registrados para este reporte", Toast.LENGTH_SHORT).show();
+		}
+	}
+
+	private void showFlujoNormal() {
+		elementos = (new E_MstMarcajePreciosController(db)).getElementsForMarcajePrecGrid(idCabecera);
+	}
+
+	private void showFlujoReinicio() {
+		Log.i("Reporte Marcaje Precio", "en showFlujoReinicio");
+		if (prefDetalles != null && !prefDetalles.isEmpty()) {
+			elementos = new ArrayList<Object>();
+			StringTokenizer tokenizer = new StringTokenizer(prefDetalles, "&");
+			while (tokenizer.hasMoreTokens()) {
+				try {
+					String fila = tokenizer.nextToken();
+					StringTokenizer tokenFila = new StringTokenizer(fila, "%");
+					String temp = null;
+					reporte = new E_ReporteMarcajePrecio();
+					temp = tokenFila.nextToken();
+					if (temp == null || temp.isEmpty() || temp.equalsIgnoreCase("null")) {
+						temp = null;
+					}
+					reporte.setCod_marcaje(temp);
+					temp = tokenFila.nextToken();
+					if (temp == null || temp.isEmpty() || temp.equalsIgnoreCase("null")) {
+						temp = null;
+					}
+					reporte.setDescripcion(temp);
+					temp = tokenFila.nextToken();
+					if (temp == null || temp.isEmpty() || temp.equalsIgnoreCase("null")) {
+						Boolean bTemp = null;
+						reporte.setHasFoto(bTemp);
+					} else {
+						reporte.setHasFoto(Boolean.valueOf(temp));
+					}
+					temp = tokenFila.nextToken();
+					if (temp == null || temp.isEmpty() || temp.equalsIgnoreCase("null")) {
+						temp = "0";
+					}
+					reporte.setId_foto(Integer.parseInt(temp));
+					temp = tokenFila.nextToken();
+					if (temp == null || temp.isEmpty() || temp.equalsIgnoreCase("null")) {
+						temp = null;
+					}
+					reporte.setComentario(temp);
+					if (tokenFila.hasMoreTokens()) {
+						temp = tokenFila.nextToken();
+						if (temp == null || temp.isEmpty() || "null".equalsIgnoreCase(temp)) {
+							temp = null;
+						}
+						reporte.setCantidad(temp);
+					} else {
+						reporte.setCantidad(null);
+					}
+				} catch (Exception ex) {
+
+				}
+				elementos.add(reporte);
+			}
+		}
+	}
+
+	private String stringify() {
+		StringBuilder sb = new StringBuilder();
+		for (Object elemento : elementos) {
+			E_ReporteMarcajePrecio elem = (E_ReporteMarcajePrecio) elemento;
+			sb.append(elem.getCod_marcaje()).append("%");
+			sb.append(elem.getDescripcion()).append("%");
+			sb.append(elem.getHasFoto()).append("%");
+			sb.append(elem.getId_foto()).append("%");
+			sb.append(elem.getComentario()).append("%");
+			sb.append(elem.getCantidad()).append("&");
+		}
+		String det = sb.substring(0, sb.length() - 1);
+		Log.i("Reporte Marcaje Precios", "detalles guardados en preferences" + det);
+		return det;
+	}
+
+	public static final int COLUMN_EDITABLE_0 = 0;
+	public static final int COLUMN_EDITABLE_1 = 1;
+	public static final int COLUMN_EDITABLE_2 = 2;
+
+	public boolean setDatosMarcajePreciosSanFernandoGuardar(E_ReporteMarcajePrecio elemento) {
+		Log.i("Reporte Marcaje Precios", "... setDatosMarcajePreciosSanFernandoGuardar. codSKU = " + elemento.getCod_marcaje());
+		ArrayList<Object> arr = datosReporte.get(elemento.getCod_marcaje());
+		boolean hayCambio = false;
+		if (arr == null) {
+			Log.e("ReportesMarcaje Precios", "datosReporte.get(" + elemento.getCod_marcaje() + ") es null");
+		} else {
+			int idFoto = elemento.getId_foto();
+
+			EditText et_cantidad = (EditText) arr.get(COLUMN_EDITABLE_0);
+			String tx_cantidad = et_cantidad.getText().toString();
+			CheckBox ck_foto = (CheckBox) arr.get(COLUMN_EDITABLE_1);
+			boolean isFoto = ck_foto.isChecked();
+
+			if (elemento.getCantidad() == null) {
+				if (!tx_cantidad.trim().equals(""))
+					hayCambio = true;
+			} else {
+				if (!elemento.getCantidad().equals(tx_cantidad)) {
+					hayCambio = true;
+				}
+			}
+
+			if (elemento.getHasFoto() == null) {
+				if (elemento.getId_foto() > 0) {
+					if (!isFoto) {
+						elemento.setId_foto(0);
+						elemento.setComentario(null);
+						hayCambio = true;
+					}
+				} else {
+					if (isFoto)
+						hayCambio = true;
+				}
+			} else {
+				if (elemento.getHasFoto().booleanValue()) {
+					if (!isFoto) {
+						elemento.setId_foto(0);
+						elemento.setComentario(null);
+					}
+					hayCambio = true;
+				} else {
+					if (isFoto)
+						idFoto = elemento.getId_foto();
+					hayCambio = true;
+				}
+			}
+
+			if (!tx_cantidad.trim().equals("") && !infoRelevada) {
+				infoRelevada = true;
+			}
+			if (isFoto && !infoRelevada) {
+				infoRelevada = true;
+			}
+
+			HashMap<String, String> datosAnteriores = new HashMap<String, String>();
+			datosAnteriores.put("cantidad", elemento.getCantidad());
+			datosAnteriores.put("id_foto", String.valueOf(elemento.getId_foto()));
+			datosAnteriores.put("comentario", elemento.getComentario());
+			datosAnterioresList.add(datosAnteriores);
+
+			if (hayCambio) {
+				elemento.setCantidad(tx_cantidad);
+				elemento.setHasFoto(isFoto);
+				elemento.setHayCambio(true);
+			}
+		}
+
+		Log.i("Reporte Marcaje Precio", "setDatosMarcajePreciosSanFernandoGuardar. hayCambio = " + hayCambio);
+		return hayCambio;
+	}
+
+	public void createRow(TableLayout table, final TableRow row, EditText et1, CheckBox ck2, final int index, boolean ini, final String textSubtitulo, final String key) {
+		int colorFila = ReporteMarcajePrecio.this.getResources().getColor(R.color.azulclaro);
+		if (ini) {
+ 			ini = false;
+		}
+ 		if (index % 2 == 0) {
+			row.setBackgroundColor(colorFila);
+		} else {
+			row.setBackgroundColor(Color.WHITE);
+		}
+
+		if (et1 != null) {
+			et1.setOnFocusChangeListener(new OnFocusChangeListener() {
+
+				public void onFocusChange(View v, boolean hasFocus) {
+					onClickFila(v, textSubtitulo, index, "", row);
+				}
+			});
+		}
+
+		if (ck2 != null) {
+			ck2.setOnCheckedChangeListener(new OnCheckedChangeListener() {
+
+				public void onCheckedChanged(CompoundButton v, boolean isChecked) {
+					onClickFila(v, textSubtitulo, index, "", row);
+					Log.i("Reporte incidencias", "click en pedido con index: " + index);
+					if (isChecked) {
+						Editor edit = preferences.edit();
+						// String detallesConcatenados = null;
+						Boolean reporteCambio = isReporteCambio();
+						Log.i("ReporteMarcajePrecio isReporteCambio", String.valueOf(reporteCambio));
+						// for (String s : datosReporteTemp.keySet()) {
+						// for(String det: datosReporteTemp.get(s)){
+						// edit.putString(s, det);
+						// }
+						// }
+						edit.remove("detalles");
+						edit.commit();
+						// setDatosSodAlicorpMayoristasInHashMap();
+						Log.i("ReporteMarcajePrecio isReporteCambio", String.valueOf(reporteCambio));
+						edit.putBoolean("reinicio", true);
+						edit.putString("detalles", stringify());
+						edit.putInt("index", index);
+						edit.commit();
+						Intent intent = new Intent(ReporteMarcajePrecio.this, ReporteFotoIncidencia.class).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						intent.putExtra("idCabecera", idCabecera);
+						intent.putExtra("codigoElemento", ((E_ReporteMarcajePrecio) elementos.get(index)).getCod_marcaje());
+						// intent.putExtra("subreporte", tipoSubreporte);
+						startActivityForResult(intent, 1);
+					} else {
+						if (((E_ReporteMarcajePrecio) elementos.get(index)).getId_foto() > 0) {
+							E_tbl_mov_fotosController fotosController = new E_tbl_mov_fotosController(db);
+							fotosController.borrar(((E_ReporteMarcajePrecio) elementos.get(index)).getId_foto());
+						}
+						((E_ReporteMarcajePrecio) elementos.get(index)).setId_foto(0);
+						((E_ReporteMarcajePrecio) elementos.get(index)).setComentario(null);
+					}
+				}
+			});
+		}
+
+		row.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				onClickFila(v, textSubtitulo, index, key, null);
+			}
+		});
+
+		// Add the TableRow to the TableLayout
+		table.addView(row, new TableLayout.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.WRAP_CONTENT));
+	}
+
+	private void onClickFila(View v, String textSubtitulo, int index, String key, TableRow fila) {
+		
+		TextView tvSubtitulo = (TextView) findViewById(R.id.tv_subtitulo);
+		tvSubtitulo.setText(Html.fromHtml(textSubtitulo));
+		if (elementos != null && !key.equals("")) {
+			((View) ((datosReporte.get(key)).get(0))).requestFocus();
+		}
+		if (fila != null) {
+			Log.i("", "setColorGrilla by fila" + index);
+			fila.setBackgroundColor(colorFilaSeleccion);
+			fila.invalidate();
+		} else {
+			Log.i("", "setColorGrilla " + index);
+			v.setBackgroundColor(colorFilaSeleccion);
+			v.invalidate();
+		}
+		if (filaCambiar != null && (index_filaCambiar != index)) {
+
+			if (index_filaCambiar % 2 == 0) {
+
+				filaCambiar.setBackgroundColor(colorFila);
+			} else {
+				filaCambiar.setBackgroundColor(Color.WHITE);
+			}
+
+		}
+		if (fila != null) {
+			filaCambiar = fila;
+		} else {
+			filaCambiar = (TableRow) v;
+		}
+		index_filaCambiar = index;
+	}
+
+	private Boolean fijarDatosCambiados() {
+		Boolean res = null;
+		infoRelevada = false;
+		if (elementos != null) {
+			datosAnterioresList = new ArrayList<HashMap<String, String>>();
+			for (Object elementV : elementos) {
+				Boolean c = null;
+				c = setDatosMarcajePreciosSanFernandoGuardar((E_ReporteMarcajePrecio) elementV);
+
+				if (res == null) {
+					res = c;
+				} else {
+					if (c != null) {
+						res = res || c;
+					}
+				}
+			}
+			if (!infoRelevada) {
+				res = null;
+			}
+		}
+		return res;
+	}
+
+	public Boolean isReporteCambio() {
+		reporteCambio = fijarDatosCambiados();
+		Log.i("ReportesMarcaje Precio", "... isReporteCambio() = " + reporteCambio);
+		return reporteCambio;
+	}
+
+	public void setReporteCambio(boolean reporteCambio) {
+		// TODO Auto-generated method stub
+		this.reporteCambio = reporteCambio;
+		if (!reporteCambio) {
+			revertirDatosCambiados();
+		}
+	}
+
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		// TODO Auto-generated method stub
+		Dialog dialog = null;
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		switch (id) {
+
+		case ALERT_GUARDAR:
+
+			builder = new AlertDialog.Builder(this);
+			String textoGuardar = getString(R.string.reportes_itt_guardar_alert) + " Marcaje de Precios ?";
+
+			builder.setMessage(textoGuardar).setCancelable(true).setNegativeButton(R.string.textNo, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+					presBotonGuardar = false;
+
+					setReporteCambio(false);
+
+					dialog.dismiss();
+				}
+			}).setPositiveButton(R.string.textSi, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+
+					Log.i("ReporteGeneral", "GuardandoCabecera con ID" + idCabecera);
+					String msg = guardar(idCabecera);
+					if (msg.equalsIgnoreCase("")) {
+						DatosManager.getInstancia().actualizarCabecera(idCabecera, db);
+						DatosManager.getInstancia().setGuardoReporte(true);
+						String resultadoGuardar = "Reporte Guardado Exitosamente";
+
+						Toast.makeText(ReporteMarcajePrecio.this, resultadoGuardar, Toast.LENGTH_SHORT).show();
+						presBotonGuardar = true;
+					} else {
+						Toast.makeText(ReporteMarcajePrecio.this, msg, Toast.LENGTH_SHORT).show();
+					}
+				}
+			});
+			dialog = builder.create();
+
+			break;
+
+		case ALERT_GUARDAR_DATOS_ANTERIORES:
+
+			builder = new AlertDialog.Builder(this);
+
+			builder.setMessage(getString(R.string.reportes_itt_guardar_alert) + "sin realizar modificaciones?").setCancelable(true).setNegativeButton(R.string.textNo, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+					setReporteCambio(false);
+					dialog.dismiss();
+				}
+			}).setPositiveButton(R.string.textSi, new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int id) {
+
+					Log.i("ReporteMarcajePrecio", "GuardandoCabecera con ID" + idCabecera);
+					String msg = guardar(idCabecera);
+					if (msg.equalsIgnoreCase("")) {
+						DatosManager.getInstancia().actualizarCabecera(idCabecera, db);
+						DatosManager.getInstancia().setGuardoReporte(true);
+						String resultadoGuardar = "Reporte Guardado Exitosamente";
+
+						Toast.makeText(ReporteMarcajePrecio.this, resultadoGuardar, Toast.LENGTH_SHORT).show();
+						presBotonGuardar = true;
+						finish();
+					} else {
+						Toast.makeText(ReporteMarcajePrecio.this, msg, Toast.LENGTH_SHORT).show();
+					}
+
+				}
+			});
+			dialog = builder.create();
+
+			break;
+
+		}
+		return dialog;
+	}
+
+	public String validarDatos() {
+		String msg = "";
+		boolean isValido = true;
+		for (Object elemento : elementos) {
+			E_ReporteMarcajePrecio rep = (E_ReporteMarcajePrecio) elemento;
+			if (rep.getCantidad() != null && rep.getCantidad().trim().isEmpty() && rep.getId_foto()>0) {
+				isValido &= false;
+				msg += "La cantidad no puede estar vacía";
+			}
+			if (!isValido) {
+				break;
+			}
+		}
+		return msg;
+	}
+
+	private boolean revertirDatosCambiados() {
+		boolean res = false;
+		if (elementos != null) {
+			for (int i = 0; i < elementos.size(); i++) {
+				Object elementV = elementos.get(i);
+				if (i < datosAnterioresList.size()) {
+					HashMap<String, String> datosAnteriores = datosAnterioresList.get(i);
+
+					((E_ReporteMarcajePrecio) elementV).setId_foto(Integer.parseInt(datosAnteriores.get("id_foto")));
+					((E_ReporteMarcajePrecio) elementV).setCantidad(datosAnteriores.get("cantidad"));
+
+				}
+			}
+		}
+		return res;
+	}
+
+	public String guardar(int idCabeceraGuardada) {
+		String msg = "";
+		msg = validarDatos();
+		if (msg.trim().isEmpty()) {
+			guardarReporte();
+		}
+		return msg;
+	}
+
+	public void guardarReporte() {
+		for (Object elementV : elementos) {
+			E_ReporteMarcajePrecio rep = (E_ReporteMarcajePrecio) elementV;
+			rep.setCod_reporte_cab(idCabecera);
+			reporteController.insert_update_ReporteMarcajePrecio(rep);
+		}
+		SharedPreferences prefReporteGral = getSharedPreferences("ReporteGeneral", MODE_WORLD_READABLE|MODE_WORLD_WRITEABLE);
+		Editor editor = prefReporteGral.edit();
+		editor.putBoolean("flujo_normal_precios", true);
+		editor.commit();
+		Editor edit = preferences.edit();
+		edit.clear();
+		edit.commit();
+/*		Intent nombre = new Intent(ReporteMarcajePrecio.this, ListaDeReporte.class);
+		nombre.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		startActivity(nombre);
+*/
+		String keyReportes = preferencesNavegacion.getString("keyReportes", "");
+		DatosManager.getInstancia().clearNavegacion(ReporteMarcajePrecio.this);
+		finish();
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Log.i("ReporteMarcajePrecio", "onActivityResult()");
+		SharedPreferences p = getSharedPreferences("ReporteFotoIncidencia", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		if (p != null) {
+			int id_foto = p.getInt("idFoto", 0);
+			String comentario = p.getString("comentario", null);
+			int codeResult = p.getInt("resultCode", 0);
+			int index = preferences.getInt("index", 0);
+			prefDetalles = preferences.getString("detalles", null);
+			showFlujoReinicio();
+			E_ReporteMarcajePrecio elem = (E_ReporteMarcajePrecio) elementos.get(index);
+			elem.setId_foto(id_foto);
+			elem.setComentario(comentario);
+			elem.setHayCambio(true);
+				
+			if (codeResult == RESULT_OK) {
+				if (id_foto > 0) {
+					elem.setHasFoto(true);
+				} else {
+					elem.setHasFoto(false);
+				}
+				
+			} else {
+				elem.setHasFoto(false);
+			}
+			SharedPreferences prefReporteGral = getSharedPreferences("ReporteGeneral", MODE_WORLD_READABLE|MODE_WORLD_WRITEABLE);
+			Editor editor = prefReporteGral.edit();
+			editor.putBoolean("flujo_normal_precios", false);
+			editor.commit();
+			Editor edit = preferences.edit();
+			edit.putBoolean("reinicio", true);
+			edit.putInt("idCab", idCabecera);
+			edit.putString("detalles", stringify());
+			edit.commit();
+			Log.i("OnActiviyResult - MarcajePrecio", "reinicio fijado en los preferences: " + preferences.getBoolean("reinicio", false));
+			finish();
+		}
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		return true;
+	}
+
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.clear();
+		Boolean isReporteCambio = isReporteCambio();
+		setReporteCambio(false);
+		if (isReporteCambio == null) {
+			MenuInflater inflater = getMenuInflater();
+			inflater.inflate(R.menu.menu_motivos_no_marcaje, menu);
+		}
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.motnomarcaje:
+			Intent nombre = new Intent(ReporteMarcajePrecio.this, MotivosActivity.class);
+			nombre.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			nombre.putExtra("codReporte", TiposReportes.COD_REP_MARCAJE_PRECIOS);
+			nombre.putExtra("idCabecera", idCabecera);
+			startActivity(nombre);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
+	public void clarearPreferences(){
+		Editor edit = preferences.edit();
+		edit.clear();
+		edit.commit();
+		
+		SharedPreferences prefReporteGral = getSharedPreferences("ReporteGeneral", MODE_WORLD_READABLE|MODE_WORLD_WRITEABLE);
+		Editor editor = prefReporteGral.edit();
+		editor.putBoolean("flujo_normal", false);
+		editor.commit();
+	}
+	@Override
+	public void onBackPressed() {
+		final String keyReportes = preferencesNavegacion.getString("keyReportes", "");
+		Boolean reporteCambio = isReporteCambio();
+		if (reporteCambio != null) {
+			if (reporteCambio.booleanValue()) {
+				// System.out.println("isReporteCambio() true");
+				// hay un cambio en la informacion
+				if (!presBotonGuardar) {
+					// Hay cambios y no se ha guardado
+					// System.out.println("Hay cambios y no se ha guardado");
+
+					AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+					alertDialog.setTitle("Retornar");
+					alertDialog.setMessage("¿Desea retornar sin guardar los datos registrados?");
+					alertDialog.setButton("Si", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							clarearPreferences();
+							Intent nombre = new Intent(ReporteMarcajePrecio.this, ListaDeReporte.class);
+							nombre.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+							startActivity(nombre);
+							
+							DatosManager.getInstancia().clearNavegacion(ReporteMarcajePrecio.this);
+						}
+					});
+					alertDialog.setButton2("No", new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							setReporteCambio(false);
+						}
+					});
+					alertDialog.show();
+
+				} else {
+					clarearPreferences();
+					Intent nombre = new Intent(ReporteMarcajePrecio.this, ListaDeReporte.class);
+					nombre.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					startActivity(nombre);
+					DatosManager.getInstancia().clearNavegacion(ReporteMarcajePrecio.this);
+				}
+			} else {
+				clarearPreferences();
+				Intent nombre = new Intent(ReporteMarcajePrecio.this, ListaDeReporte.class);
+				nombre.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				startActivity(nombre);
+				DatosManager.getInstancia().clearNavegacion(ReporteMarcajePrecio.this);
+			}
+		} else {
+			clarearPreferences();
+			Intent nombre = new Intent(ReporteMarcajePrecio.this, ListaDeReporte.class);
+			nombre.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			startActivity(nombre);
+			DatosManager.getInstancia().clearNavegacion(ReporteMarcajePrecio.this);
+		}
+	}
+
+	@Override
+	public void setIdFiltro(int idFiltro) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setKey(String key) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public View getView() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setHandler(Handler handler) {
+		// TODO Auto-generated method stub
+		
+	}
+}

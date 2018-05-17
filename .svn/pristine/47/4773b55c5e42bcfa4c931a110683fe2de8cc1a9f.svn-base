@@ -1,0 +1,112 @@
+package com.org.seratic.lucky.accessData.control;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+
+import com.org.seratic.lucky.accessData.entities.E_ReporteMarcajePrecio;
+import com.org.seratic.lucky.accessData.entities.E_TblFiltrosApp;
+import com.org.seratic.lucky.accessData.entities.E_TblMovReporteCab;
+import com.org.seratic.lucky.accessData.entities.Entity;
+
+public class E_MstMarcajePreciosController extends EntityController {
+	
+	private SQLiteDatabase db;
+	private Cursor dbCursor;
+	
+	public E_MstMarcajePreciosController(SQLiteDatabase db) {
+		this.db = db;
+	}
+	
+
+	@Override
+	public boolean create(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean edit(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean remove(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public List<Entity> getAll() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public List<Object> getElementsForMarcajePrecGrid(int idCabecera) {
+		List<Object> elements = null;
+		E_TblMovReporteCab cab = new E_TblMovReporteCabController(db).getByIdCabecera(idCabecera);
+		E_TblFiltrosApp filtrosApp = new TblMstMovFiltrosAppController(db).getById(cab.getId_filtros_app());
+		
+		String sql =  "SELECT m.cod_marcaje, m.nom_marcaje, rm.cantidad, rm.id_foto, rm.comentario, rm.cod_motivo from TBL_MST_MARCAJE_PRECIO m ";
+		if (filtrosApp != null) {
+			sql += "join TBL_MOV_FILTROS_APP f ON(";
+			if (filtrosApp.getCod_categoria() != null && !filtrosApp.getCod_categoria().isEmpty()) {
+				sql += "f.cod_categoria = m.cod_categoria";
+			}
+			if (filtrosApp.getCod_marca() != null && !filtrosApp.getCod_marca().isEmpty()) {
+				sql += " AND f.cod_marca = m.cod_marca";
+			}
+			sql += " AND f.cod_reporte = m.cod_reporte)";
+		}
+		sql += " join TBL_MOV_REPORTE_CAB cab";
+		if (filtrosApp != null) {
+			sql += " ON(cab.id_filtros_app = f.id)";
+		}
+		sql += " left outer join TBL_MOV_REP_MARCAJE_PRECIO rm on (rm.cod_marcaje = m.cod_marcaje) and (rm.cod_reporte_cab = cab.id) and (m.cod_reporte = cab.cod_reporte) where cab.id ="+idCabecera;
+		
+
+		dbCursor = db.rawQuery(sql, null);
+		dbCursor.moveToFirst();
+		if (dbCursor.getCount() > 0) {
+			elements = new ArrayList<Object>();
+			while (!dbCursor.isAfterLast()) {
+
+				E_ReporteMarcajePrecio mA = new E_ReporteMarcajePrecio();
+				//
+				mA.setCod_marcaje(dbCursor.getString(0));
+				mA.setDescripcion(dbCursor.getString(1));
+				mA.setCantidad(dbCursor.getString(2));
+				mA.setId_foto(dbCursor.getInt(3));
+				mA.setComentario(dbCursor.getString(4));
+//				if (mA.getId_foto() > 0) {
+//					mA.setHasFoto(Boolean.TRUE);
+//				} 
+				elements.add(mA);
+				dbCursor.moveToNext();
+			}
+			dbCursor.close();
+		}
+		return elements;
+	}
+	
+	public E_ReporteMarcajePrecio getcodMotivobyIdRepCab(int id_reporte_cab) {
+		E_ReporteMarcajePrecio mA = new E_ReporteMarcajePrecio();
+		String sql = "SELECT cod_motivo FROM TBL_MOV_REP_MARCAJE_PRECIO WHERE cod_reporte_cab = "+id_reporte_cab+" and cod_motivo != ''";
+		dbCursor = db.rawQuery(sql, null);
+			
+		if (dbCursor.getCount() > 0) {
+			dbCursor.moveToFirst();
+			mA.setCod_motivo(dbCursor.getString(0));
+			mA.setCod_reporte_cab(id_reporte_cab);
+		}else{
+			return null;
+		}
+		return mA;
+	}
+
+	
+}

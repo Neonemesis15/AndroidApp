@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tr_reporte_presencia_elemvisibilidad"
+    style="@style/BodyGrilla" >
+
+    <Spinner
+	    android:id="@+id/spinnerDist"
+	    style="@style/TextoBodyGrilla"
+	    android:layout_width="90dp"
+        android:prompt="@string/mobs_prompt"/>
+    
+     <EditText
+        android:id="@+id/et_codigoitt"
+        style="@style/TextoBodyGrilla"
+        android:singleLine="true"
+        android:maxWidth="100dp"
+        android:layout_width="100dp"
+        android:inputType="text" />
+
+     <ImageButton
+    android:id="@+id/imgBorrarDist"
+    android:layout_width="10dp"
+	android:maxWidth="15dp"
+    android:src="@drawable/borrar" 
+    android:clickable="true" />
+    
+<!--     android:maxWidth="100dp" -->
+
+</TableRow>

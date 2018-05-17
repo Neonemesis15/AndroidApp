@@ -1,0 +1,100 @@
+package com.org.seratic.lucky.accessData.entities;
+
+public class E_ReporteCapacitacion extends Entity {
+	
+	private int id;
+	private int cod_reporte_cab;
+	private String cod_capacitacion;
+	private String cod_motivo;
+	private String valor_capacitacion;
+	private String valor_motivo;
+	private String cod_categoria;
+	String descripcion;
+	boolean hayCambio;
+	
+	public E_ReporteCapacitacion() {
+	}
+	
+	public E_ReporteCapacitacion(int cod_reporte_cab, String cod_capacitacion, String valor_capacitacion) {
+		this.cod_reporte_cab = cod_reporte_cab;
+		this.cod_capacitacion = cod_capacitacion;
+		this.valor_capacitacion = valor_capacitacion;
+	}
+	
+	public E_ReporteCapacitacion(int cod_reporte_cab, String cod_motivo) {
+		this.cod_reporte_cab = cod_reporte_cab;
+		this.cod_motivo = cod_motivo;
+	}
+	
+	public String getCod_capacitacion() {
+		return cod_capacitacion;
+	}
+	
+	public String getCod_categoria() {
+		return cod_categoria;
+	}
+	
+	public String getCod_motivo() {
+		return cod_motivo;
+	}
+	
+	public int getCod_reporte_cab() {
+		return cod_reporte_cab;
+	}
+	
+	public int getId() {
+		return id;
+	}
+	
+	public String getValor_capacitacion() {
+		return valor_capacitacion;
+	}
+	
+	public String getValor_motivo() {
+		return valor_motivo;
+	}
+	
+	public void setCod_capacitacion(String cod_capacitacion) {
+		this.cod_capacitacion = cod_capacitacion;
+	}
+	
+	public void setCod_categoria(String cod_categoria) {
+		this.cod_categoria = cod_categoria;
+	}
+	
+	public void setCod_motivo(String cod_motivo) {
+		this.cod_motivo = cod_motivo;
+	}
+	
+	public void setCod_reporte_cab(int cod_reporte_cab) {
+		this.cod_reporte_cab = cod_reporte_cab;
+	}
+	
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public void setValor_capacitacion(String valor_capacitacion) {
+		this.valor_capacitacion = valor_capacitacion;
+	}
+	
+	public void setValor_motivo(String valor_motivo) {
+		this.valor_motivo = valor_motivo;
+	}
+
+	public String getDescripcion() {
+		return descripcion;
+	}
+
+	public void setDescripcion(String descripcion) {
+		this.descripcion = descripcion;
+	}
+
+	public boolean isHayCambio() {
+		return hayCambio;
+	}
+
+	public void setHayCambio(boolean hayCambio) {
+		this.hayCambio = hayCambio;
+	}
+}

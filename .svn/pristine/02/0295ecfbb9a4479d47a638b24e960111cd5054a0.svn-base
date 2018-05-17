@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  android:orientation="vertical"
+  android:layout_width="fill_parent"
+  android:layout_height="fill_parent"
+  android:background="@drawable/fondo2" >
+
+   
+    <LinearLayout 
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="0dp"
+    android:layout_weight="0.5"
+    android:gravity="center_vertical"
+    android:layout_marginTop="35dp">
+    
+    <ImageView
+    android:src="@drawable/selector_btn_sincronizar"
+    android:layout_height="wrap_content"
+    android:layout_width="0dp"
+    android:layout_weight="0.5"
+    android:clickable="true"
+    android:onClick="sincronizar"
+    android:id="@+id/img_sincronizar"
+    
+    />
+
+    <ImageView
+    android:src="@drawable/selector_btn_iniciar"
+    android:id="@+id/img_iniciar"
+    android:layout_height="wrap_content"
+    android:layout_width="0dp"
+    android:layout_weight="0.5"
+    android:onClick="desplegarRegistros"
+    android:clickable="true"
+    />
+    </LinearLayout>
+    
+    <LinearLayout 
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="0dp"
+    android:layout_weight="0.5"
+    android:gravity="center_vertical">
+    
+    <ImageView 
+    android:src="@drawable/selector_btn_reportes"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="0.5"
+    android:clickable="true"
+    android:onClick="reportes"
+    android:id="@+id/img_reportes"/>
+    
+    <ImageView 
+    android:src="@drawable/selector_btn_pendientes"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="0.5"
+    android:clickable="true"
+    android:onClick="pendientes"
+    android:id="@+id/img_pendientes"/>
+    </LinearLayout>
+ 
+</LinearLayout>

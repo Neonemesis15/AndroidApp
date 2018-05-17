@@ -1,0 +1,48 @@
+package com.org.seratic.lucky.model;
+
+import com.org.seratic.lucky.accessData.entities.E_TBL_MOV_REP_COD_ITT;
+
+public class E_Codigo_ITT_Distribuidora {
+
+	// a string Cod_Distribuidora
+	// b string TipoAsociación
+
+	private String a;
+	private String b;
+
+	
+	
+	public E_Codigo_ITT_Distribuidora() {
+		
+	}
+
+	public E_Codigo_ITT_Distribuidora(E_TBL_MOV_REP_COD_ITT e_TBL_MOV_REP_COD_ITT) {
+		this.a = e_TBL_MOV_REP_COD_ITT.getId_distribuidora() + "";
+		this.b = e_TBL_MOV_REP_COD_ITT.getTipo_asociacion();
+	}
+
+	public void setDatosPrueba1() {
+		a="1";b="0";
+	}
+	
+	public void setDatosPrueba2() {
+		a="2";b="1";
+	}
+
+	public String getA() {
+		return a;
+	}
+
+	public void setA(String a) {
+		this.a = a;
+	}
+
+	public String getB() {
+		return b;
+	}
+
+	public void setB(String b) {
+		this.b = b;
+	}
+	
+}

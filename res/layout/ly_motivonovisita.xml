@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/fondo2"
+    android:orientation="vertical"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp">
+
+    <TextView
+        android:id="@+id/textView1"
+        style="@style/Titulo"/>
+ 	 
+ 	 <TextView
+         android:id="@+id/textViewSub"
+         style="@style/Subtitulo"
+        />
+
+    <ListView
+        android:id="@android:id/android:list"
+        style="@style/Lista" >
+    </ListView>
+
+</LinearLayout>

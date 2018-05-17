@@ -1,0 +1,859 @@
+package com.org.seratic.lucky;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Handler;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.org.seratic.lucky.accessData.SQLiteDatabaseAdapter;
+import com.org.seratic.lucky.accessData.control.TblMstFamiliaController;
+import com.org.seratic.lucky.accessData.control.TblMstMarcaController;
+import com.org.seratic.lucky.accessData.control.TblMstMovFiltrosAppController;
+import com.org.seratic.lucky.accessData.control.TblMstPresentacionController;
+import com.org.seratic.lucky.accessData.control.TblMstProductoController;
+import com.org.seratic.lucky.accessData.control.TblMstSubcategoriaController;
+import com.org.seratic.lucky.accessData.control.TblMstSubfamiliaController;
+import com.org.seratic.lucky.accessData.control.TblMstSubmarcaController;
+import com.org.seratic.lucky.accessData.control.TblMstTipoMaterialController;
+import com.org.seratic.lucky.accessData.entities.E_TBL_MST_MARCA;
+import com.org.seratic.lucky.accessData.entities.E_TblFiltrosApp;
+import com.org.seratic.lucky.accessData.entities.E_TblMstCategoria;
+import com.org.seratic.lucky.accessData.entities.E_TblMstFamilia;
+import com.org.seratic.lucky.accessData.entities.E_TblMstMaterialApoyo;
+import com.org.seratic.lucky.accessData.entities.E_TblMstOpcReporte;
+import com.org.seratic.lucky.accessData.entities.E_TblMstPresentacion;
+import com.org.seratic.lucky.accessData.entities.E_TblMstProducto;
+import com.org.seratic.lucky.accessData.entities.E_TblMstSubcategoria;
+import com.org.seratic.lucky.accessData.entities.E_TblMstSubfamilia;
+import com.org.seratic.lucky.accessData.entities.E_TblMstSubmarca;
+import com.org.seratic.lucky.accessData.entities.E_TblMst_Tipo_Material;
+import com.org.seratic.lucky.accessData.entities.Entity;
+import com.org.seratic.lucky.accessData.entities.TblMstCategoriaController;
+import com.org.seratic.lucky.manager.DatosManager;
+import com.org.seratic.lucky.manager.TiposReportes;
+
+public class ComponenteOpcReporteActivity implements IReportes {
+	private int idReporte;
+	private int idSubreporte;
+	// private TblMstOpcReporteController opcionReporteController;
+	private E_TblMstOpcReporte opcionReporte;
+	private SQLiteDatabase db;
+	private int posicionFiltro;
+	private List<Integer> filtros;
+	private HashMap<String, String> itemsSeleccionados;
+
+	private Button irAFiltroAnteriorBtn;
+	private List<Entity> listado;
+	private String[] values;
+
+	private ReporteGeneral iFiltros;
+	private View myView;
+	private ListView lista;
+	private Context context;
+	private TextView textV;
+	private int tipoSubReporte;
+	private boolean relevar;
+	private int opcionRelevar;
+	private String key;
+	private SharedPreferences preferences;
+	private int tipoRelevo=0;
+	private String textoRelevo="";
+
+	//
+	public ComponenteOpcReporteActivity(Context context, int idReporte, String key, int posFiltro, HashMap<String, String> itemsSelecc, boolean relevar, int tipoSubreporte) {
+		// TODO Auto-generated constructor stub
+
+		// @Override
+		// protected void onCreate(Bundle savedInstanceState) {
+		// // TODO Auto-generated method stub
+		// super.onCreate(savedInstanceState);
+		// LayoutInflater.
+
+		// setContentView(c_repoR.layout.ly_componente_oprte);
+		Log.i("ComponenteOpcReporteActivity", "onCreate()");
+		this.context = context;
+		this.idReporte = idReporte;
+		this.relevar = relevar;
+		this.key = key;
+					
+		this.tipoSubReporte = tipoSubreporte;
+		
+		SQLiteDatabaseAdapter aSQLiteDatabaseAdapter = SQLiteDatabaseAdapter.getInstance(context);
+		db = aSQLiteDatabaseAdapter.getWritableDatabase();
+		//
+		// // Bundle extras = getIntent().getExtras();
+		// // if (extras != null) {
+		// idReporte = DatosManager.getInstancia().getIdReporte();
+		// idSubreporte = idSR;//extras.getInt("idSubreporte");
+		// //}
+		//
+
+		LayoutInflater inflator = LayoutInflater.from(context);
+		myView = inflator.inflate(R.layout.ly_componente_opc_reporte, null);
+
+		this.posicionFiltro = posFiltro;
+		irAFiltroAnteriorBtn = (Button) myView.findViewById(R.id.irAFiltroAnteriorBtn);
+
+		textV = (TextView) myView.findViewById(R.id.tipoFiltro);
+
+		irAFiltroAnteriorBtn.setOnClickListener(new View.OnClickListener() {
+
+			public void onClick(View arg0) {
+				// TODO Auto-generated method stub
+				irAFiltroAnterior();
+			}
+		});
+
+		// opcionReporteController = new TblMstOpcReporteController(db);
+		this.itemsSeleccionados = itemsSelecc;
+
+		lista = (ListView) myView.findViewById(R.id.listFiltros);
+		actualizarOpcionReporte();
+		preferences = context.getSharedPreferences("Filtros"+key, Context.MODE_WORLD_READABLE | Context.MODE_WORLD_WRITEABLE);
+		posicionFiltro = preferences.getInt("posicionFiltro", 0);
+		Log.i("Componente Opc Reporte", "posFiltro pasado = " + posFiltro + " --- posFiltro recuperado en preferences: " + posicionFiltro);
+		if (posicionFiltro > 0) {
+			String categoria = preferences.getString("categoria", null);
+			if (categoria != null) {
+				itemsSeleccionados.put("categoria", categoria);
+			}
+			String subcategoria = preferences.getString("subcategoria", null);
+			if (subcategoria != null) {
+				itemsSeleccionados.put("subcategoria", subcategoria);
+			}
+			String marca = preferences.getString("marca", null);
+			if (marca != null) {
+				itemsSeleccionados.put("marca", marca);
+			}
+			String submarca = preferences.getString("submarca", null);
+			if (submarca != null) {
+				itemsSeleccionados.put("submarca", submarca);
+			}
+			String presentacion = preferences.getString("presentacion", null);
+			if (presentacion != null) {
+				itemsSeleccionados.put("presentacion", presentacion);
+			}
+			String familia = preferences.getString("familia", null);
+			if (familia != null) {
+				itemsSeleccionados.put("familia", familia);
+			}
+			String subfamilia = preferences.getString("subfamilia", null);
+			if (subfamilia != null) {
+				itemsSeleccionados.put("subfamilia", subfamilia);
+			}
+			String producto = preferences.getString("producto", null);
+			if (producto != null) {
+				itemsSeleccionados.put("producto", producto);
+			}
+			String tipo_elementos_visibilidad = preferences.getString("tipo_elementos_visibilidad", null);
+			if (tipo_elementos_visibilidad != null) {
+				itemsSeleccionados.put("tipo_elementos_visibilidad", producto);
+			}
+			String material_pop = preferences.getString("material_pop", null);
+			if (material_pop != null) {
+				itemsSeleccionados.put("material_pop", producto);
+			}
+		}
+		
+		this.relevar = reporteReleva();
+		
+		//Para que funcione lo de las vistas.
+		if(this.relevar){
+			if(opcionRelevar==tipoRelevo){
+				refrescarVista();
+			}else{
+				textV.setText("La vista de relevo "+textoRelevo+" no esta parametrizada, por favor verifique" );
+				irAFiltroAnteriorBtn.setVisibility(View.GONE);
+			}
+		}else{
+			refrescarVista();
+		}
+	}
+
+	public void actualizarOpcionReporte() {
+
+		opcionReporte = DatosManager.getInstancia().getOpcionesReporte();
+		
+		filtros = new ArrayList<Integer>();
+	
+		if (tipoSubReporte == TiposReportes.TIPO_ELEMENTOS_VISIB_SANFERNANDO_TRADICIONAL_CHIKARA) {
+			filtros.add(9);
+			opcionRelevar = TiposReportes.OPC_REPORTE_TIPO_ELEMENTOS_VISIB;
+			filtros.add(10);
+			opcionRelevar = TiposReportes.OPC_REPORTE_TIPO_MATERIAL_POP;
+		}else{
+			if (opcionReporte.getVerCategoria() == 1) {
+				filtros.add(1);
+				opcionRelevar = TiposReportes.OPC_REPORTE_CATEGORIA;
+			}
+			if (opcionReporte.getVerSubcategoria() == 1) {
+				filtros.add(2);
+				opcionRelevar = TiposReportes.OPC_REPORTE_SUB_CATEGORIA;
+			}
+			if (opcionReporte.getVerMarca() == 1) {
+				filtros.add(3);
+				opcionRelevar = TiposReportes.OPC_REPORTE_MARCA;
+			}
+			if (opcionReporte.getVerSubmarca() == 1) {
+				filtros.add(4);
+				opcionRelevar = TiposReportes.OPC_REPORTE_SUB_MARCA;
+			}
+			if (opcionReporte.getVerPresentacion() == 1) {
+				filtros.add(5);
+				opcionRelevar = TiposReportes.OPC_REPORTE_PRESENTACION;
+			}
+			if (opcionReporte.getVerFamilia() == 1) {
+				filtros.add(6);
+				opcionRelevar = TiposReportes.OPC_REPORTE_FAMILIA;
+			}
+			if (opcionReporte.getVerSubfamilia() == 1) {
+				filtros.add(7);
+				opcionRelevar = TiposReportes.OPC_REPORTE_SUB_FAMILIA;
+			}
+			if (opcionReporte.getVerProducto() == 1) {
+				opcionRelevar = TiposReportes.OPC_REPORTE_PRODUCTO;
+				 filtros.add(8);			// Para pruebas se debe comentar esta línea.
+			}
+		}
+		Log.i("ComponenteOpcReporteActivity", "Relevando por:" + opcionRelevar);
+	}
+
+	public void refrescarVista() {
+		String[] values = actualizarListado();
+		if (values == null) {
+			irAFiltroAnterior();
+		} else {
+			ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, values);
+			lista.setAdapter(adapter);
+			lista.setOnItemClickListener(new OnItemClickListener() {
+
+				public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+					irASiguienteFiltro(position);
+				}
+			});
+		}
+	}
+
+	public String[] actualizarListado() {
+		Log.i("ComponenteOpcReporteActivity", "actualizarListado()");
+
+		int filtroActual = filtros.get(posicionFiltro);
+		listado = new ArrayList<Entity>();
+		irAFiltroAnteriorBtn.setText(obtenerNombreFiltroAnterior());
+		if (posicionFiltro == 0) {
+			irAFiltroAnteriorBtn.setVisibility(View.GONE);
+		} else {
+			irAFiltroAnteriorBtn.setVisibility(View.VISIBLE);
+		}
+		values = null;
+		switch (filtroActual) {
+		case 1: // Categoria
+			Log.i("ComponenteOpcReporteActivity", "Filtro Actual " + 1);
+			listado = (new TblMstCategoriaController(db)).getAllByIdReporte(idReporte, isProductoPropio(), isMarcaPropio());
+			if (listado != null) {
+				values = new String[listado.size()];
+				for (int i = 0; i < listado.size(); i++) {
+					values[i] = ((E_TblMstCategoria) listado.get(i)).getNombre();
+				}
+			} else {
+				Toast.makeText(context, "No hay Categorias asignadas para este filtro", Toast.LENGTH_SHORT).show();
+			}
+			textV.setText("Categorias");
+			break;
+
+		case 2:// Subcategoria
+			Log.i("ComponenteOpcReporteActivity", "Filtro Actual " + 2);
+			String cat = itemsSeleccionados.get("categoria").toString();
+			int c = 0;
+			if (cat != null)
+				c = Integer.parseInt(cat);
+			listado = (new TblMstSubcategoriaController(db)).getByCategoria(idReporte, c);
+			if (listado != null) {
+				values = new String[listado.size()];
+				for (int i = 0; i < listado.size(); i++) {
+					values[i] = ((E_TblMstSubcategoria) listado.get(i)).getNom_subcategoria();
+				}
+			} else {
+				Toast.makeText(context, "No hay Subcategorias asignadas para este filtro", Toast.LENGTH_SHORT).show();
+			}
+			textV.setText("Subcategoria");
+			break;
+
+		case 3: // Marcas
+			Log.i("ComponenteOpcReporteActivity", "Filtro Actual " + 3);
+			
+				listado = (new TblMstMarcaController(db)).getByFiltros(idReporte, itemsSeleccionados);
+				if (listado != null) {
+					values = new String[listado.size()];
+					for (int i = 0; i < listado.size(); i++) {
+						values[i] = ((E_TBL_MST_MARCA) listado.get(i)).getNom_marca();
+					}
+				} else {
+					Toast.makeText(context, "No hay Marcas asignadas para este filtro", Toast.LENGTH_SHORT).show();
+				}
+				textV.setText("Marcas");			
+			break;
+		case 4: // Submarcas
+			Log.i("ComponenteOpcReporteActivity", "Filtro Actual " + 4);
+			listado = (new TblMstSubmarcaController(db)).getByFiltros(idReporte, itemsSeleccionados);
+			if (listado != null) {
+				values = new String[listado.size()];
+				for (int i = 0; i < listado.size(); i++) {
+					values[i] = ((E_TblMstSubmarca) listado.get(i)).getNom_submarca();
+				}
+			} else {
+				Toast.makeText(context, "No hay Submarcas asignadas para este filtro", Toast.LENGTH_SHORT).show();
+			}
+			textV.setText("Sub Marcas");
+			break;
+
+		case 5: // Presentacion
+			Log.i("ComponenteOpcReporteActivity", "Filtro Actual " + 5);
+			listado = (new TblMstPresentacionController(db)).getByFiltros(idReporte, itemsSeleccionados);
+			if (listado != null) {
+				values = new String[listado.size()];
+				for (int i = 0; i < listado.size(); i++) {
+					values[i] = ((E_TblMstPresentacion) listado.get(i)).getNom_presentacion();
+				}
+			} else {
+				Toast.makeText(context, "No hay Presentaciones asignadas para este filtro", Toast.LENGTH_SHORT).show();
+			}
+			textV.setText("Presentacion");
+			break;
+
+		case 6: // Familia
+			Log.i("ComponenteOpcReporteActivity", "Filtro Actual " + 6);
+			listado = (new TblMstFamiliaController(db)).getByFiltros(idReporte, itemsSeleccionados);
+			if (listado != null) {
+				values = new String[listado.size()];
+				for (int i = 0; i < listado.size(); i++) {
+					values[i] = ((E_TblMstFamilia) listado.get(i)).getNom_familia();
+				}
+			} else {
+				Toast.makeText(context, "No hay Familias asignadas para este filtro", Toast.LENGTH_SHORT).show();
+			}
+			textV.setText("Familia");
+			break;
+		case 7: // SubFamilia
+			Log.i("ComponenteOpcReporteActivity", "Filtro Actual " + 7);
+			listado = (new TblMstSubfamiliaController(db)).getByFiltros(idReporte, itemsSeleccionados);
+			if (listado != null) {
+				values = new String[listado.size()];
+				for (int i = 0; i < listado.size(); i++) {
+					values[i] = ((E_TblMstSubfamilia) listado.get(i)).getNom_subfamilia();
+				}
+			} else {
+				Toast.makeText(context, "No hay Subfamilias asignadas para este filtro", Toast.LENGTH_SHORT).show();
+			}
+			textV.setText("Sub Familia");
+			break;
+		case 9: //Tipo Elementos Visibilidad para Reporte ElementosVisibilidad SF Chikara
+			if (tipoSubReporte == TiposReportes.TIPO_ELEMENTOS_VISIB_SANFERNANDO_TRADICIONAL_CHIKARA) {
+			Log.i("ComponenteOpcReporteActivity Tipo Elementos Visib SanF Chikara", "Filtro Actual " + 9);
+			listado = (new TblMstTipoMaterialController(db)).getByTipoReporte(idReporte);
+			if (listado != null) {
+				values = new String[listado.size()];
+				for (int i = 0; i < listado.size(); i++) {
+					values[i] = ((E_TblMst_Tipo_Material) listado.get(i)).getDescripcion();
+				}
+			} else {
+				Toast.makeText(context, "No hay Tipos de Elementos de Visibilidad asignados para este filtro", Toast.LENGTH_SHORT).show();
+			}
+			textV.setText("Tipos Elementos Visib.");	
+			}			
+			break;
+		case 10: //Tipo Material POP para Reporte ElementosVisibilidad SF Chikara
+			if (tipoSubReporte == TiposReportes.TIPO_ELEMENTOS_VISIB_SANFERNANDO_TRADICIONAL_CHIKARA) {
+			Log.i("ComponenteOpcReporteActivity Tipo Elementos Visib SanF Chikara", "Filtro Actual " + 10);
+			listado = (new TblMstTipoMaterialController(db)).getByTipoMaterialAndCodReporte(idReporte, itemsSeleccionados);
+			if (listado != null) {
+				values = new String[listado.size()];
+				for (int i = 0; i < listado.size(); i++) {
+					values[i] = ((E_TblMstMaterialApoyo) listado.get(i)).getDescripcion();
+				}
+			} else {
+				Toast.makeText(context, "No hay Tipos de Material POP asignados para este filtro", Toast.LENGTH_SHORT).show();
+			}
+			textV.setText("Tipos Material POP");	
+			}			
+			break;
+		default: // Producto
+			Log.i("ComponenteOpcReporteActivity", "Filtro Actual Default");
+			listado = (new TblMstProductoController(db)).getByFiltros(idReporte, itemsSeleccionados);
+			if (listado != null) {
+				values = new String[listado.size()];
+				for (int i = 0; i < listado.size(); i++) {
+					values[i] = ((E_TblMstProducto) listado.get(i)).getNombre();
+				}
+			} else {
+				Toast.makeText(context, "No hay Productos asignados para este filtro", Toast.LENGTH_SHORT).show();
+			}
+			textV.setText("Producto");
+			break;
+		}
+		
+		
+		return values;
+	}
+
+	private void irASiguienteFiltro(int position) {
+		Log.i("ComponenteOpcReporteActivity", "irASiguienteFiltro(int position) " + position);
+		if (position != -1) {
+			Log.i("ComponenteOpcReporteActivity", "Pos Filtro Ini id (" + key + "): " + posicionFiltro);
+			Editor ed = preferences.edit();
+			int caso = filtros.get(posicionFiltro);
+			switch (caso) {
+			case 1: // categoria
+				// if (position != -1) {
+				if (!itemsSeleccionados.containsKey("categoria")) {
+					itemsSeleccionados.remove("categoria");
+				}
+				itemsSeleccionados.put("categoria", String.valueOf(((E_TblMstCategoria) listado.get(position)).getId()));
+				ed.putString("categoria", String.valueOf(((E_TblMstCategoria) listado.get(position)).getId()));
+				// }
+				break;
+			case 2: // subcategoria
+				// if (position != -1) {
+				if (!itemsSeleccionados.containsKey("subcategoria")) {
+					itemsSeleccionados.remove("subcategoria");
+				}
+				itemsSeleccionados.put("subcategoria", ((E_TblMstSubcategoria) listado.get(position)).getCod_subcategoria());
+				ed.putString("subcategoria", ((E_TblMstSubcategoria) listado.get(position)).getCod_subcategoria());
+				// }
+				break;
+
+			case 3:// marca
+					// if (position != -1) {
+				if (!itemsSeleccionados.containsKey("marca")) {
+					itemsSeleccionados.remove("marca");
+				}
+				itemsSeleccionados.put("marca", ((E_TBL_MST_MARCA) listado.get(position)).getCod_marca());
+				ed.putString("marca", ((E_TBL_MST_MARCA) listado.get(position)).getCod_marca());
+				// }
+				break;
+
+			case 4: // submarca
+				// if (position != -1) {
+				if (!itemsSeleccionados.containsKey("submarca")) {
+					itemsSeleccionados.remove("submarca");
+				}
+				itemsSeleccionados.put("submarca", ((E_TblMstSubmarca) listado.get(position)).getCod_submarca());
+				ed.putString("submarca", ((E_TblMstSubmarca) listado.get(position)).getCod_submarca());
+				// }
+				break;
+
+			case 5: // presentacion
+				// if (position != -1) {
+				if (!itemsSeleccionados.containsKey("presentacion")) {
+					itemsSeleccionados.remove("presentacion");
+				}
+				itemsSeleccionados.put("presentacion", ((E_TblMstPresentacion) listado.get(position)).getCod_presentacion());
+				ed.putString("presentacion", ((E_TblMstPresentacion) listado.get(position)).getCod_presentacion());
+				// }
+				break;
+
+			case 6: // familia
+				// if (position != -1) {
+				if (!itemsSeleccionados.containsKey("familia")) {
+					itemsSeleccionados.remove("familia");
+				}
+				itemsSeleccionados.put("familia", ((E_TblMstFamilia) listado.get(position)).getCod_familia());
+				ed.putString("familia", ((E_TblMstFamilia) listado.get(position)).getCod_familia());
+				// }
+				break;
+
+			case 7: // subfamilia
+				// if (position != -1) {
+				if (!itemsSeleccionados.containsKey("subfamilia")) {
+					itemsSeleccionados.remove("subfamilia");
+				}
+				itemsSeleccionados.put("subfamilia", ((E_TblMstSubfamilia) listado.get(position)).getCod_subfamilia());
+				ed.putString("subfamilia", ((E_TblMstSubfamilia) listado.get(position)).getCod_subfamilia());
+				// }
+				break;
+			case 9: // tipo elementos Visibilidad
+				// if (position != -1) {
+				if (!itemsSeleccionados.containsKey("tipo_elementos_visibilidad")) {
+					itemsSeleccionados.remove("tipo_elementos_visibilidad");
+				}
+				itemsSeleccionados.put("tipo_elementos_visibilidad", ((E_TblMst_Tipo_Material) listado.get(position)).getCod_tipo_material());
+				ed.putString("tipo_elementos_visibilidad", ((E_TblMst_Tipo_Material) listado.get(position)).getCod_tipo_material());
+				// }
+				break;
+			case 10: // tipo material POP
+				// if (position != -1) {
+				if (!itemsSeleccionados.containsKey("material_pop")) {
+					itemsSeleccionados.remove("material_pop");
+				}
+				itemsSeleccionados.put("material_pop", ((E_TblMstMaterialApoyo) listado.get(position)).getCod_material());
+				ed.putString("material_pop", ((E_TblMstMaterialApoyo) listado.get(position)).getCod_material());
+				// }
+				break;
+
+			default: // producto
+				// if (position != -1) {
+				if (!itemsSeleccionados.containsKey("producto")) {
+					itemsSeleccionados.remove("producto");
+				}
+				itemsSeleccionados.put("producto", ((E_TblMstProducto) listado.get(position)).getId());
+				ed.putString("producto", ((E_TblMstProducto) listado.get(position)).getId());
+				// }
+				break;
+			}
+			ed.commit();
+		}
+		posicionFiltro++;
+		Log.i(ComponenteOpcReporteActivity.class.getName(), "Relevar " + relevar + " PosFiltro" + posicionFiltro + " Filtros" + filtros.size());
+		if ((posicionFiltro < filtros.size())) {
+			if (relevar && (posicionFiltro == (filtros.size() - 1))) {
+				posicionFiltro--;
+				almacenarFiltros();
+			} else {
+				refrescarVista();
+			}
+
+		} else {
+			posicionFiltro--;
+			almacenarFiltros();
+		}
+		Log.i("ComponenteOpcReporteActivity", "Pos Filtro Fin id (" + key + "): " + posicionFiltro);
+	}
+
+	private void almacenarFiltros() {
+		TblMstMovFiltrosAppController filtrosController = new TblMstMovFiltrosAppController(db);
+		E_TblFiltrosApp fA = new E_TblFiltrosApp();
+
+		if (itemsSeleccionados.size() > 0) {
+			Editor ed = preferences.edit();
+			ed.putInt("posicionFiltro", posicionFiltro);
+			ed.commit();
+			fA.setCod_reporte(String.valueOf(idReporte));
+			fA.setCod_subreporte(String.valueOf(idSubreporte));
+			if (itemsSeleccionados.containsKey("categoria"))
+				fA.setCod_categoria(itemsSeleccionados.get("categoria").toString());
+			else
+				fA.setCod_categoria("");
+
+			if (itemsSeleccionados.containsKey("subcategoria"))
+				fA.setCod_subcategoria(itemsSeleccionados.get("subcategoria").toString());
+			else
+				fA.setCod_subcategoria("");
+
+			if (itemsSeleccionados.containsKey("marca"))
+				fA.setCod_marca(itemsSeleccionados.get("marca").toString());
+			else
+				fA.setCod_marca("");
+
+			if (itemsSeleccionados.containsKey("submarca"))
+				fA.setCod_submarca(itemsSeleccionados.get("submarca").toString());
+			else
+				fA.setCod_submarca("");
+
+			if (itemsSeleccionados.containsKey("presentacion"))
+				fA.setCod_presentacion(itemsSeleccionados.get("presentacion").toString());
+			else
+				fA.setCod_presentacion("");
+
+			if (itemsSeleccionados.containsKey("familia"))
+				fA.setCod_familia(itemsSeleccionados.get("familia").toString());
+			else
+				fA.setCod_familia("");
+
+			if (itemsSeleccionados.containsKey("subfamilia"))
+				fA.setCod_subfamilia(itemsSeleccionados.get("subfamilia").toString());
+			else
+				fA.setCod_subfamilia("");
+			
+			if (itemsSeleccionados.containsKey("tipo_elementos_visibilidad"))
+				fA.setCod_tipo_material(itemsSeleccionados.get("tipo_elementos_visibilidad").toString());
+			else
+				fA.setCod_tipo_material("");
+			
+			if (itemsSeleccionados.containsKey("material_pop"))
+				fA.setCod_material_apoyo(itemsSeleccionados.get("material_pop").toString());
+			else
+				fA.setCod_material_apoyo("");
+
+			if (itemsSeleccionados.containsKey("producto"))
+				fA.setCod_producto(itemsSeleccionados.get("producto").toString());
+			else
+				fA.setCod_producto("");
+
+		} else {
+			// AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+			// alertDialog.setTitle("Info");
+			// alertDialog.setMessage("No se encontraron filtros o productos.");
+			// alertDialog.setButton("Aceptar",
+			// new DialogInterface.OnClickListener() {
+			// public void onClick(DialogInterface dialog, int which) {
+			// finalizarActivity();
+			// }
+			// });
+			// alertDialog.show();
+		}
+		int idFiltros = filtrosController.existeFiltro(fA);
+		if (idFiltros == -1) {
+			idFiltros = filtrosController.createAndGetId(fA);
+		}
+		fA.setId(idFiltros);
+		DatosManager.getInstancia().setFiltrosSeleccionados(fA);
+		Log.i("Filtros", "" + iFiltros);
+		if (iFiltros != null) {
+			Log.i("ComponenteOpcReporteActivity", "Pos Filtro SELECCION  id (" + key + "): " + posicionFiltro);
+			// if(!relevar)
+			iFiltros.seleccion(idFiltros);
+			// else
+			// iFiltros.relevar(idFiltros,opcionRelevar);
+		} else {
+			// finish();
+		}
+	}
+
+	private void irAFiltroAnterior() {
+		if (posicionFiltro > 0) {
+			posicionFiltro--;
+		}
+		Log.i("ComponenteOpcReporteActivity", "Ir Filtro ANTERIOR  id (" + key + "): " + posicionFiltro);
+		refrescarVista();
+	}
+
+	private String obtenerNombreFiltroAnterior() {
+		int fAnterior = 1;
+		if (posicionFiltro > 0) {
+			fAnterior = filtros.get(posicionFiltro - 1);
+		}
+		String nombreFiltro = "";
+		switch (fAnterior) {
+		case 1:
+			nombreFiltro = "Categorias";
+			break;
+		case 2:
+			nombreFiltro = "Subcategorias";
+			break;
+		case 3:
+			nombreFiltro = "Marcas";
+			break;
+		case 4:
+			nombreFiltro = "Submarcas";
+			break;
+		case 5:
+			nombreFiltro = "Presentacion";
+			break;
+		case 6:
+			nombreFiltro = "Familias";
+			break;
+		case 7:
+			nombreFiltro = "Subfamilias";
+			break;
+		case 9:
+			nombreFiltro = "Tipo Elementos Visib.";
+			break;
+		case 10:
+			nombreFiltro = "Tipo Material POP";
+			break;
+		// case 8:
+		// nombreFiltro = "Productos";
+		// break;
+		}
+		return nombreFiltro;
+	}
+
+	public void setListenerSelecion(ReporteGeneral filtros) {
+		this.iFiltros = filtros;
+		Log.i("Componente", "setIfiltros");
+
+	}
+
+	// @Override
+	public String guardar(int idCabeceraGuardada) {
+		// TODO Auto-generated method stub
+		return "";
+	}
+
+	// @Override
+	public void setIdFiltro(int idFiltro) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public void setKey(String key) {
+		//tipoSubReporte = TiposReportes.getInstancia(context).getIDSubReportefromMap(key);
+
+	}
+
+	@Override
+	public View getView() {
+		// TODO Auto-generated method stub
+		return myView;
+	}
+
+	@Override
+	public Boolean isReporteCambio() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setHandler(Handler handler) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public int isProductoPropio() {
+		int propio = 0;
+		switch (tipoSubReporte) {
+		case TiposReportes.TIPO_PRESENCIA_COLGATE_SUPERVISOR_SKUPRECIO:
+		//case TiposReportes.TIPO_PRESENCIA_COLGATE_SKU_PRES_PRECIO_PEDIDO:
+		case TiposReportes.TIPO_PRESENCIA_COLGATE_GESTOR_SKUPRESENCIA:
+		case TiposReportes.TIPO_PRESENCIA_COLGATE_SKU_FRENTE_PROFUNDIDAD:
+		case TiposReportes.TIPO_PRESENCIA_STOCK_COLGATE_SKU_STOCK:
+			propio = 1;
+			break;
+		case TiposReportes.TIPO_PRESENCIA_COMPETENCIA_SUPERVISOR_SKUPRECIO:
+		//case TiposReportes.TIPO_PRESENCIA_COMPETENCIA_SKU_PRES_PRECIO:
+		case TiposReportes.TIPO_PRESENCIA_COMPETENCIA_GESTOR_SKUPRESENCIA:
+		case TiposReportes.TIPO_PRESENCIA_STOCK_COMPETENCIA_SKU_STOCK:
+			propio = 0;
+
+			break;
+
+		default:
+			propio = -1;
+			break;
+
+		}
+		Log.i("Compo", "propio" + propio);
+		return propio;
+	}
+
+	public int isMarcaPropio() {
+		int marca = 0;
+		switch (TiposReportes.getInstancia(context).getIDSubReportefromMap(key)) {
+		case TiposReportes.TIPO_COMPETENCIA_ALICORP_MAYOR:
+			// Si el producto es propio
+			marca = 0;
+			if (opcionReporte.getVerMarca() == 1) {
+				marca = 1;
+			}
+			break;
+
+		case TiposReportes.TIPO_COMPETENCIA_ALICORP_AS:
+			// Si el producto es propio
+			marca = 0;
+			if (opcionReporte.getVerMarca() == 1) {
+				marca = 1;
+			}
+			break;
+
+		case TiposReportes.TIPO_COMPETENCIA_SF_MODERNO_FORM:
+			// Si el producto es propio
+			marca = 0;
+			if (opcionReporte.getVerMarca() == 1) {
+				marca = 1;
+			}
+			break;
+
+		default:
+			marca = -1;// no debe filtrar por propio
+			if (opcionReporte.getVerMarca() == 1) {
+				marca = -2;// debe validar que existar marcasen la consulta de
+							// categorias
+			}
+			break;
+
+		}
+		Log.i("Compo", "propio" + marca);
+		return marca;
+	}
+
+	@Override
+	public void setReporteCambio(boolean reporteCambio) {
+		// TODO Auto-generated method stub
+
+	}
+
+	public HashMap<String, String> getItemsSeleccionados() {
+		return itemsSeleccionados;
+	}
+
+	public void setItemsSeleccionados(HashMap<String, String> itemsSeleccionados) {
+		this.itemsSeleccionados = itemsSeleccionados;
+	}
+
+	private boolean reporteReleva() {
+		boolean res = false;
+		switch (TiposReportes.getInstancia(context).getIDSubReportefromMap(key)) {
+
+		case TiposReportes.TIPO_COMPETENCIA_ALICORP_MAYOR:// Marca
+		case TiposReportes.TIPO_COMPETENCIA_ALICORP_AS:// Marca
+		//case TiposReportes.TIPO_ELEMENTOS_VISIB_SANFERNANDO_TRADICIONAL_CHIKARA:// Marca
+			textoRelevo="Marca";
+			tipoRelevo=TiposReportes.OPC_REPORTE_MARCA;
+			res = true;
+			break;
+		case TiposReportes.TIPO_COMPETENCIA_SF_MODERNO_FORM:// Marca
+			textoRelevo="Marca";
+			tipoRelevo=TiposReportes.OPC_REPORTE_MARCA;
+			res = true;
+			break;
+		case TiposReportes.TIPO_SOD_ALICORP_ID_EXPRIM_EXSEC_MOBS_FOTO:   //Marca
+			textoRelevo="Marca";
+			tipoRelevo=TiposReportes.OPC_REPORTE_MARCA;
+			res = true;
+			break;
+		case TiposReportes.TIPO_STOCK_ALICORP_COD_STOCK_MOBS://Familia
+			tipoRelevo=TiposReportes.OPC_REPORTE_FAMILIA;
+			textoRelevo="Familia";
+		res = true;
+			break;
+	
+		case TiposReportes.TIPO_PRESENCIA_COLGATE_SUPERVISOR_SKUPRECIO ://producto
+		case TiposReportes.TIPO_PRESENCIA_COMPETENCIA_SUPERVISOR_SKUPRECIO ://producto
+		case TiposReportes.TIPO_PRESENCIA_STOCK_COLGATE_SKU_STOCK ://producto
+		case TiposReportes.TIPO_PRESENCIA_STOCK_COMPETENCIA_SKU_STOCK ://producto
+//		case TiposReportes.TIPO_PRESENCIA_COMPETENCIA_SKU_PRES_PRECIO://producto
+	//	case TiposReportes.TIPO_PRESENCIA_COLGATE_SKU_PRES_PRECIO_PEDIDO://producto
+		case TiposReportes.TIPO_PRESENCIA_COMPETENCIA_GESTOR_SKUPRESENCIA://producto
+		case TiposReportes.TIPO_PRESENCIA_COLGATE_GESTOR_SKUPRESENCIA://producto
+		case TiposReportes.TIPO_PRESENCIA_COLGATE_SKU_FRENTE_PROFUNDIDAD://producto
+		case TiposReportes.TIPO_PRECIOS_ALICORP_SKU_PPDV_POFERTA_MOBS:	//producto
+		case TiposReportes.TIPO_PRECIOS_ALICORP_SKU_PMAYORISTA_PREVENTA_POFERTA_MOBS://producto
+		case TiposReportes.TIPO_QUIEBRES_ALICORP_SKU_MOBS ://producto
+		
+		/*case TiposReportes.TIPO_PRECIOS_TRADICIONAL_SANFERNANDO ://producto
+		case TiposReportes.TIPO_PRESENCIA_TRADICIONAL_SANFERNANDO ://producto*/
+			
+/*		case TiposReportes.TIPO_PRECIOS_AAVV_SANFERNANDO ://producto
+		case TiposReportes.TIPO_VENTAS_AAVV_SANFERNANDO  ://producto
+		case TiposReportes.TIPO_INCIDENCIA_SF_PRODUCTOS ://producto*/
+		case TiposReportes.TIPO_PRECIOPVP_SF_AAVV ://producto
+		case TiposReportes.TIPO_PRECIOPDV_PDV_SF_AAVV  ://producto
+			
+		case TiposReportes.TIPO_PRECIOS_SF_MODERNO  ://producto
+		case TiposReportes.TIPO_INGRESOS_SF_MODERNO ://producto
+		case TiposReportes.TIPO_IMPULSO_SF_MODERNO  ://producto
+			
+		case TiposReportes.TIPO_PRECIOS_SF_TRADICIONAL_CHIKARA ://producto
+		case TiposReportes.TIPO_PRESENCIA_PRODUCTOS_SF_TRADICIONAL_CHIKARA ://producto
+			textoRelevo="Producto";
+		  res=true;
+		  tipoRelevo=TiposReportes.OPC_REPORTE_PRODUCTO;
+		}
+		return res;
+	}
+}

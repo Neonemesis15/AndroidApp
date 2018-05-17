@@ -1,0 +1,77 @@
+package com.org.seratic.lucky.model;
+
+import com.org.seratic.lucky.accessData.entities.E_ReporteMarcajePrecio;
+import com.org.seratic.lucky.accessData.entities.E_tbl_mov_fotos;
+
+public class E_Reporte_Marcaje_Precio_Mov_Detalle {
+
+	private String a; // cod_motivo
+	private String b; // Cantidad
+	private String c; // valor_motivo
+	private String d; // cod_marcaje
+	private String e; // nombre_foto
+	private String f; // comentario_foto
+
+	
+	public E_Reporte_Marcaje_Precio_Mov_Detalle(E_ReporteMarcajePrecio reporte, E_tbl_mov_fotos e_foto) {
+		this.a = reporte.getCod_motivo()==null||reporte.getCod_motivo().isEmpty()?null:reporte.getCod_motivo();
+		this.b = reporte.getCantidad()==null||reporte.getCantidad().isEmpty()?null:reporte.getCantidad();
+		if(a!=null){
+			this.c = "1";
+		}
+		this.d = reporte.getCod_marcaje()==null||reporte.getCod_marcaje().isEmpty()?null:reporte.getCod_marcaje();
+		if(e_foto!=null){
+			this.e = Utilidades.cleanNombreFoto(e_foto.getNom_foto());
+			this.f = reporte.getComentario()==null||reporte.getComentario().isEmpty()?null:reporte.getComentario();
+		}
+	}
+	
+	public void setA(String a) {
+		this.a = a;
+	}
+
+	public String getA() {
+		return a;
+	}
+
+	public void setC(String c) {
+		this.c = c;
+	}
+
+	public String getC() {
+		return c;
+	}
+
+	public void setE(String e) {
+		this.e = e;
+	}
+
+	public String getE() {
+		return e;
+	}
+
+	public void setB(String b) {
+		this.b = b;
+	}
+
+	public String getB() {
+		return b;
+	}
+
+	public void setD(String d) {
+		this.d = d;
+	}
+
+	public String getD() {
+		return d;
+	}
+
+	public void setF(String f) {
+		this.f = f;
+	}
+
+	public String getF() {
+		return f;
+	}
+
+}

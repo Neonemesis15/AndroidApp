@@ -1,0 +1,62 @@
+<LinearLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/tv_subtitulo"
+        style="@style/Subtitulo" />
+
+      <HorizontalScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true"
+        android:scrollbars="none" >
+
+        <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:orientation="vertical" >
+            
+    		<TableLayout
+        		android:layout_width="fill_parent"
+        		android:layout_height="30dp"
+        		android:stretchColumns="*" >
+
+        		<TableRow style="@style/HeadGrilla" >
+
+	            <TextView
+                	style="@style/TextoHeadGrilla"
+                	android:text="Sku"
+                	android:width="60dp" />
+
+	            <TextView
+    	            style="@style/TextoHeadGrilla"
+        	        android:text="P. PVP"
+            	    android:width="60dp" />
+            
+            	<TextView
+                	style="@style/TextoHeadGrilla"
+                	android:text="P. PVD"
+                	android:lines="2"
+                	android:width="100dp" />
+
+         	</TableRow>
+    	</TableLayout>
+
+	    <ScrollView
+        	android:layout_width="fill_parent"
+        	android:layout_height="fill_parent" >
+	
+    	    <TableLayout
+            	android:id="@+id/tl_reporte_precio_sanfernando_tradicional_chikara"
+            	android:layout_width="fill_parent"
+            	android:layout_height="fill_parent"
+            	android:stretchColumns="*" >
+        	</TableLayout>
+    	</ScrollView>
+    	</LinearLayout>
+    </HorizontalScrollView>
+</LinearLayout>

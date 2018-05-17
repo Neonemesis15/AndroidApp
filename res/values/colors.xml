@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="azulLucky">#0066a4</color>
+    <color name="amarilloSeleccion">#f9fc9b</color>
+     <color name="fucsiaSeleccion">#f3b9d8</color>
+    <color name="blanco">#FFFFFF</color>
+    <color name="translucent_red">#80ff0000</color>
+    <color name="transparent">#00000000</color>
+    <color name="fucsiaLucy">#ea078c</color>
+     <color name="azulclaro">#C6E3E0</color>
+       <color name="azulFondosTras">#c9edf6ff</color>
+       <color name="negro">#000000</color>
+
+</resources>
+<!--  -->

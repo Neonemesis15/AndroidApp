@@ -1,0 +1,85 @@
+package com.org.seratic.lucky.vo;
+
+/**
+ * ServicioId
+ */
+public class ServicioVo {
+
+	// @
+	// {
+	// CREATE TABLE [TBL_MST_SERVICIO] (
+	// [cod_reporte] vARCHAR(20) NULL,
+	// [cod_servicio] vARCHAR(20) NULL,
+	// [nom_servicio] vARCHAR(100) NULL,
+	// [cod_categoria] vARCHAR(20) NULL,
+	// [cod_marca] vARCHAR(20) NULL
+	// );
+	// }
+	// {
+	// a string Código de Reporte
+	// b string Código de Servicio
+	// c string Nombre de Servicio
+	// d string Código de Categoría
+	// e string Código de Marca
+	// }
+	// {
+	private String codReporte;
+	private String codServicio;
+	private String nomServicio;
+	private String codCategoria;
+	private String codMarca;
+	// }
+	// @
+	public ServicioVo() {
+	}
+
+	public ServicioVo(String codReporte, String codServicio,
+			String nomServicio, String codCategoria, String codMarca) {
+		this.codReporte = codReporte;
+		this.codServicio = codServicio;
+		this.nomServicio = nomServicio;
+		this.codCategoria = codCategoria;
+		this.codMarca = codMarca;
+	}
+
+	public String getCodReporte() {
+		return this.codReporte;
+	}
+
+	public void setCodReporte(String codReporte) {
+		this.codReporte = codReporte;
+	}
+
+	public String getCodServicio() {
+		return this.codServicio;
+	}
+
+	public void setCodServicio(String codServicio) {
+		this.codServicio = codServicio;
+	}
+
+	public String getNomServicio() {
+		return this.nomServicio;
+	}
+
+	public void setNomServicio(String nomServicio) {
+		this.nomServicio = nomServicio;
+	}
+
+	public String getCodCategoria() {
+		return this.codCategoria;
+	}
+
+	public void setCodCategoria(String codCategoria) {
+		this.codCategoria = codCategoria;
+	}
+
+	public String getCodMarca() {
+		return this.codMarca;
+	}
+
+	public void setCodMarca(String codMarca) {
+		this.codMarca = codMarca;
+	}
+
+}

@@ -1,0 +1,56 @@
+package com.org.seratic.lucky.accessData.control;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+import com.org.seratic.lucky.accessData.entities.E_MstMaterialDeApoyo;
+import com.org.seratic.lucky.accessData.entities.Entity;
+
+public class E_TblMstMaterialDeApoyoController extends EntityController {
+	private SQLiteDatabase db;
+	private Cursor dbCursor;
+
+	public E_TblMstMaterialDeApoyoController(SQLiteDatabase db) {
+		super();
+		this.db = db;
+	}
+
+	@Override
+	public boolean create(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean edit(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean remove(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public List<Entity> getAll() {
+		List<Entity> materiales = new ArrayList<Entity>();
+		dbCursor = db.rawQuery("SELECT cod_reporte,tipo_material,cod_material,descripcion,propio FROM TBL_MST_MATERIAL_APOYO", null);
+		dbCursor.moveToFirst();
+		while (!dbCursor.isAfterLast()) {
+			String cod_reporte = dbCursor.getString(0);
+			String tipo_material = dbCursor.getString(1);
+			String cod_material = dbCursor.getString(2);
+			String descripcion = dbCursor.getString(3);
+			String propio = dbCursor.getString(4);
+			E_MstMaterialDeApoyo material = new E_MstMaterialDeApoyo(cod_reporte, tipo_material, cod_material, descripcion);
+			materiales.add(material);
+			dbCursor.moveToNext();
+		}
+		return materiales;
+	}
+}

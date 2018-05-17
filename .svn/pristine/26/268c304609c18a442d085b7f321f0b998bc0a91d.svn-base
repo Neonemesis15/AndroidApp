@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tr_reporte_stock_alicorp_mayoristas"
+    android:layout_width="fill_parent"
+    android:layout_height="25dp" >
+
+    <TextView
+        android:id="@+id/tv_codigo"
+        style="@style/TextoBodyGrilla2"
+        android:width="60dp" />
+
+    <EditText
+        android:id="@+id/et_stock"
+        style="@style/TextoBodyGrilla2"
+        android:numeric="integer"
+        android:singleLine="true"
+        android:width="60dp" />
+
+    <Spinner
+        android:id="@+id/spinnerMObs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:prompt="@string/mobs_prompt"
+        android:width="120dp" />
+
+</TableRow>

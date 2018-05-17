@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:background="@drawable/fondo" android:padding="5dp">
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+	    <ImageButton
+		    android:id="@+id/imageButton2"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:src="@drawable/selector_btn" 
+		    android:clickable="true" 
+		    android:onClick="asignar" 
+		    android:layout_alignParentRight="true" 
+		    android:scaleType="fitXY" 
+		    android:layout_alignParentTop="true" 
+		    android:background="#ffffffff"/>
+
+	    <ImageButton
+	        android:id="@+id/imageButton1"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentTop="true"
+	        android:layout_toLeftOf="@+id/imageButton2"
+	        android:clickable="true"
+	        android:onClick="agregar"
+	        android:src="@drawable/agregar" android:layout_marginRight="20dp"/>
+
+	    <TextView
+	        android:id="@+id/textView1"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignLeft="@+id/imageButton2"
+	        android:text="ASIGNAR"
+	        android:textAppearance="?android:attr/textAppearanceMedium" android:layout_alignRight="@+id/imageButton2" android:layout_alignTop="@+id/imageButton2" android:layout_alignBottom="@+id/imageButton2" android:gravity="center_vertical|center_horizontal" android:background="#00FFFFFF"/>
+        
+    </RelativeLayout>
+    
+        <ListView
+        android:id="@android:id/android:list"
+        style="@style/Lista"
+        android:layout_width="match_parent"
+        android:layout_weight="1" >
+    </ListView>
+
+</LinearLayout>

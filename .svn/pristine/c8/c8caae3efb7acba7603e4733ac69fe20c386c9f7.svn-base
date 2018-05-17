@@ -1,0 +1,57 @@
+package com.org.seratic.lucky.accessData.entities;
+
+public class E_TBL_MOV_REP_COD_ITT extends Entity{
+	int  id;
+	int id_reporte_cab;
+	int Id_distribuidora;
+	String tipo_asociacion;
+	
+	public E_TBL_MOV_REP_COD_ITT() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public E_TBL_MOV_REP_COD_ITT(int id, int id_reporte_cab,
+			int id_distribuidora, String tipo_asociacion) {
+		super();
+		this.id = id;
+		this.id_reporte_cab = id_reporte_cab;
+		Id_distribuidora = id_distribuidora;
+		this.tipo_asociacion = tipo_asociacion;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getId_reporte_cab() {
+		return id_reporte_cab;
+	}
+
+	public void setId_reporte_cab(int id_reporte_cab) {
+		this.id_reporte_cab = id_reporte_cab;
+	}
+
+	public int getId_distribuidora() {
+		return Id_distribuidora;
+	}
+
+	public void setId_distribuidora(int id_distribuidora) {
+		Id_distribuidora = id_distribuidora;
+	}
+
+	public String getTipo_asociacion() {
+		return tipo_asociacion;
+	}
+
+	public void setTipo_asociacion(String tipo_asociacion) {
+		this.tipo_asociacion = tipo_asociacion;
+	}
+
+
+	
+}

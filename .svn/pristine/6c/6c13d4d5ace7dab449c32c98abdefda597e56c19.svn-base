@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/fondo" >
+
+    <LinearLayout
+        android:id="@+id/opcionReporteRelativeLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" 
+        android:gravity="right"
+        >
+
+        <Button
+        android:id="@+id/irAFiltroAnteriorBtn"
+        android:background="@drawable/selector_btn"
+        android:textColor="@color/blanco"
+        android:textStyle="bold"
+        android:layout_width="120dp"
+        android:layout_height="40dp"
+            />
+        
+    </LinearLayout>
+	<TextView 
+	    android:id="@+id/tipoFiltro"
+	      android:text="Categoria"
+	    style="@style/SubtituloFiltros"
+	    />
+    <ListView
+        android:id="@+id/listFiltros"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:cacheColorHint="#00000000" >
+    </ListView>
+
+</LinearLayout>

@@ -1,0 +1,53 @@
+package com.org.seratic.lucky.accessData.entities;
+
+public class E_ReporteCredito extends Entity {
+
+	private int id;
+	private int cod_reporte_cab;
+	private String cod_credito;
+	private String valor_credito;
+	
+	
+	public E_ReporteCredito() {
+	}
+	
+	public E_ReporteCredito(String cod_credito, int cod_reporte_cab, String valor_credito) {
+		this.cod_credito = cod_credito;
+		this.cod_reporte_cab = cod_reporte_cab;
+		this.valor_credito = valor_credito;
+	}
+	
+	
+	public int getId() {
+		return id;
+	}
+	
+	public String getCod_credito() {
+		return cod_credito;
+	}
+	
+	public int getCod_reporte_cab() {
+		return cod_reporte_cab;
+	}
+	
+	public String getValor_credito() {
+		return valor_credito;
+	}
+	
+	public void setCod_credito(String cod_credito) {
+		this.cod_credito = cod_credito;
+	}
+	
+	public void setCod_reporte_cab(int cod_reporte_cab) {
+		this.cod_reporte_cab = cod_reporte_cab;
+	}
+	
+	public void setId(int id) {
+		this.id = id;
+	}
+	
+	public void setValor_credito(String valor_credito) {
+		this.valor_credito = valor_credito;
+	}
+	
+}

@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/fondo2"
+    android:orientation="vertical"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp" >
+
+    <TextView
+        android:id="@+id/pendientes_titulo"
+        style="@style/Titulo"
+        android:text="Punto de Venta" />
+
+    
+    <LinearLayout 
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <!--
+        clave de Eliana
+        android:apiKey="0p5yU2B5uclKVeL02IvSKaRNkl4KJoe4gAafimw"         
+         -->
+	    <com.google.android.maps.MapView
+	        android:id="@+id/mapa"
+	        android:layout_width="270dp"
+	        android:layout_height="120dp" 
+	        android:apiKey = "0p5yU2B5uclLu6PKSe1U6otT_jcHrSV9Z2I_spA"
+	        android:clickable="true" />
+	    <Button 
+	        android:id="@+id/btn_ver_mapa"
+	        android:layout_width="fill_parent"
+	        android:layout_height="fill_parent"
+	        android:background="@drawable/selector_btn"
+	        android:text="+"
+	        android:textColor="#ffffff"
+	        android:gravity="center"/>
+
+    </LinearLayout>
+    
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:fadeScrollbars="false"
+        android:scrollbarFadeDuration="0"
+         >
+        
+
+        <LinearLayout
+            android:id="@+id/ly_datos_punto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/shape_fondo_form"
+            android:gravity="left"
+            android:orientation="vertical"
+            android:paddingLeft="10dp" >
+
+			<LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+	           <TextView
+	               android:id="@+id/id_PtoVenta"
+	               android:layout_width="wrap_content"
+	               android:layout_height="wrap_content"
+	               android:text="Id Punto venta:  "
+	               android:textColor="#333333"
+	               android:textSize="17dp"
+	               android:textStyle="bold" />
+	
+	           <TextView
+	               android:id="@+id/id_PtoVentav"
+	               android:layout_width="fill_parent"
+	               android:layout_height="wrap_content"
+	               android:text=""
+	               android:textColor="#333333"
+	               android:textSize="17dp" />
+	         </LinearLayout>
+
+           <TextView
+               android:id="@+id/razon_social"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text="Razón Social:  "
+               android:textColor="#333333"
+               android:textSize="17dp"
+               android:textStyle="bold" />
+
+           <TextView
+               android:id="@+id/razon_socialv"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text=""
+               android:textColor="#333333"
+               android:textSize="17dp" />
+
+           <TextView
+               android:id="@+id/direccion"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text="Dirección:  "
+               android:textColor="#333333"
+               android:textSize="17dp"
+               android:textStyle="bold" />
+
+           <TextView
+               android:id="@+id/direccionv"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text=""
+               android:textColor="#333333"
+               android:textSize="17dp" />
+
+           
+           <TextView
+               android:id="@+id/nom_cadena"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text="Agrupacion Comercial:  "
+               android:textColor="#333333"
+               android:textSize="17dp"
+               android:textStyle="bold" />
+
+           <TextView
+               android:id="@+id/nom_cadenav"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text=""
+               android:textColor="#333333"
+               android:textSize="17dp" />
+
+            <TableRow
+                android:id="@+id/tableRow7"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:id="@+id/nom_canal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Nombre Canal:  "
+                    android:textColor="#333333"
+                    android:textSize="17dp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/nom_canalv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="#333333"
+                    android:textSize="17dp" />
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/tableRow8"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:id="@+id/tipo_mercado"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tipo Mercado:  "
+                    android:textColor="#333333"
+                    android:textSize="17dp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tipo_mercadov"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textColor="#333333"
+                    android:textSize="17dp" />
+            </TableRow>
+
+           
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

@@ -1,0 +1,105 @@
+package com.org.seratic.lucky.accessData.control;
+
+import java.util.Date;
+import java.util.List;
+
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+import com.org.seratic.lucky.accessData.entities.E_Marcacion;
+import com.org.seratic.lucky.accessData.entities.E_MovMarcacion;
+import com.org.seratic.lucky.accessData.entities.Entity;
+import com.org.seratic.lucky.manager.DatosManager;
+
+public class MarcacionController extends EntityController {
+
+	private SQLiteDatabase db;
+	private Cursor dbCursor;
+
+	public MarcacionController(SQLiteDatabase db) {
+		super();
+		this.db = db;
+	}
+
+	@Override
+	public boolean create(Entity e) {
+		try {
+			ContentValues cv = new ContentValues();
+			E_Marcacion marcacion = (E_Marcacion) e;
+			cv.put("cod_usuario", marcacion.getCod_usuario());
+			cv.put("cod_equipo", marcacion.getCod_equip());
+			cv.put("cod_campana", marcacion.getCod_campana());
+			cv.put("cod_estado", marcacion.getCod_estado());
+			cv.put("nom_motivo", marcacion.getNom_motivo());
+			cv.put("fecha_inicio", marcacion.getFecha_inicio().toString());
+			cv.put("latitud_ini", marcacion.getLatitud_ini());
+			cv.put("longitud_ini", marcacion.getLongitud_ini());
+			cv.put("origen_ini", marcacion.getOrigen_ini());
+			cv.put("estado", marcacion.getEstado());
+			db.insert("TBL_MARCACION", DatosManager.DATABASE_NAME, cv);
+			// db.insert("TBL_MARCACION", R.string.d , cv);
+			return true;
+		} catch (Exception ex) {
+			return false;
+		}
+	}
+
+	@Override
+	public boolean edit(Entity e) {
+		E_Marcacion m = (E_Marcacion) e;
+		String sql = "UPDATE TBL_MARCACION SET"
+				+ " fecha_fin = " + (new Date()).toString() 
+				+ " WHERE id_marcacion = " + m.getId_marcacion();
+		dbCursor = db.rawQuery(sql, null);
+		return false;
+	}
+
+	@Override
+	public boolean remove(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public List<Entity> getAll() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public E_Marcacion getLastMarcacionByEstado(int idEstado) {
+		String sql = "SELECT id_marcacion, fecha_inicio, fecha_fin FROM TBL_MARCACION WHERE cod_estado = "
+				+ idEstado + " ORDER BY fecha_inicio";
+		dbCursor = db.rawQuery(sql, null);
+		dbCursor.moveToFirst();
+
+		int id;
+		String fechaInicio = "";
+		String fechaFin = "";
+		if (dbCursor.getCount() > 0) {
+			while (!dbCursor.isAfterLast()) {
+				id = dbCursor.getInt(0);
+				fechaInicio = dbCursor.getString(1);
+				fechaFin = dbCursor.getString(2);
+				dbCursor.moveToNext();
+			}
+
+			if (fechaFin == null) {
+				E_Marcacion m = new E_Marcacion();
+				m.setCod_estado(idEstado);
+				m.setFecha_inicio(fechaInicio);
+				return m;
+
+			} else {
+				return null;
+			}
+		} else {
+			return null;
+		}
+	}
+	
+	public void getMarcacionRequest(E_MovMarcacion e_MovMarcacion){
+		
+	}
+
+}

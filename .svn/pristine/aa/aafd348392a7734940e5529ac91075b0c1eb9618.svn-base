@@ -1,0 +1,34 @@
+package com.org.seratic.lucky.vo;
+
+public class StatusVo {
+	
+	private String cod_reporte;
+	private String cod_status;
+	private String desc_status;
+	
+	
+	public String getCod_reporte() {
+		return cod_reporte;
+	}
+	
+	public String getCod_status() {
+		return cod_status;
+	}
+	
+	public String getDesc_status() {
+		return desc_status;
+	}
+	
+	public void setCod_reporte(String cod_reporte) {
+		this.cod_reporte = cod_reporte;
+	}
+	
+	public void setCod_status(String cod_status) {
+		this.cod_status = cod_status;
+	}
+	
+	public void setDesc_status(String desc_status) {
+		this.desc_status = desc_status;
+	}
+
+}

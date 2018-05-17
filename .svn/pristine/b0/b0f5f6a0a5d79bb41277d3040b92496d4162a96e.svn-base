@@ -1,0 +1,49 @@
+package com.org.seratic.lucky.vo;
+
+public class ParametrizacionVo {
+
+	private Integer cod_reporte;
+	private Integer cod_subreporte;
+	private String cod_canal;
+	private String cod_cliente;
+	private String tipo_reporte;
+	private String cod_equipo;
+	
+	public Integer getCod_reporte() {
+		return cod_reporte;
+	}
+	public void setCod_reporte(Integer cod_reporte) {
+		this.cod_reporte = cod_reporte;
+	}
+	public Integer getCod_subreporte() {
+		return cod_subreporte;
+	}
+	public void setCod_subreporte(Integer cod_subreporte) {
+		this.cod_subreporte = cod_subreporte;
+	}
+	public String getCod_canal() {
+		return cod_canal;
+	}
+	public void setCod_canal(String cod_canal) {
+		this.cod_canal = cod_canal;
+	}
+	public String getCod_cliente() {
+		return cod_cliente;
+	}
+	public void setCod_cliente(String cod_cliente) {
+		this.cod_cliente = cod_cliente;
+	}
+	public String getTipo_reporte() {
+		return tipo_reporte;
+	}
+	public void setTipo_reporte(String tipo_reporte) {
+		this.tipo_reporte = tipo_reporte;
+	}
+	public String getCod_equipo() {
+		return cod_equipo;
+	}
+	public void setCod_equipo(String cod_equipo) {
+		this.cod_equipo = cod_equipo;
+	}
+	
+}

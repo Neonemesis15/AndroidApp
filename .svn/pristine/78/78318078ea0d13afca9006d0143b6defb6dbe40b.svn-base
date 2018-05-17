@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/fondo2" 
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    >
+
+    <TextView 
+        android:id="@+id/pendientes_titulo"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Lista de pendientes"
+		style="@style/Titulo"/>"
+	
+    <ListView 
+        android:id="@+id/list_pendientes"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:cacheColorHint="#00000000"
+        android:dividerHeight="5dp">
+        
+    </ListView>
+    
+</LinearLayout>

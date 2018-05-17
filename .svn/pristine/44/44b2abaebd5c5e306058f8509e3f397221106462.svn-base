@@ -1,0 +1,200 @@
+package com.org.seratic.lucky;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.app.AlertDialog;
+import android.app.ListActivity;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.org.seratic.lucky.accessData.SQLiteDatabaseAdapter;
+import com.org.seratic.lucky.accessData.control.E_MstMotivoReporteController;
+import com.org.seratic.lucky.accessData.control.ReportesController;
+import com.org.seratic.lucky.accessData.entities.E_MotivoReporte;
+import com.org.seratic.lucky.accessData.entities.E_ReporteCapacitacion;
+import com.org.seratic.lucky.accessData.entities.E_ReporteExhibicion;
+import com.org.seratic.lucky.accessData.entities.E_ReporteExhibicionDet;
+import com.org.seratic.lucky.accessData.entities.E_ReporteMarcajePrecio;
+import com.org.seratic.lucky.manager.DatosManager;
+import com.org.seratic.lucky.manager.TiposReportes;
+
+public class MotivosActivity extends ListActivity {
+	List<E_MotivoReporte> motivoRep;
+	private SQLiteDatabase db;
+	String[] idMotivo;
+	E_MstMotivoReporteController mRepController;
+	ProgressDialog pd;
+	int codReporte;
+	int idCabecera;
+	TextView titulo;
+	ReportesController reportesController;
+	E_ReporteExhibicion exhib;
+	ArrayList<E_ReporteCapacitacion> reportesCap;
+	ArrayList<E_ReporteMarcajePrecio> reportesMarcajeP;
+	SharedPreferences preferencesNavegacion;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.ly_motivonovisita);
+		SQLiteDatabaseAdapter aSQLiteDatabaseAdapter = SQLiteDatabaseAdapter.getInstance(this);
+		db = aSQLiteDatabaseAdapter.getWritableDatabase();
+		if (DatosManager.getInstancia().getUsuario() == null) {
+			DatosManager instanciaDM = (DatosManager) getLastNonConfigurationInstance();
+			if (instanciaDM == null) {
+				Log.i("Motivos Activity", "Instancia recuperada Null");
+				DatosManager.getInstancia().cargarDatos(db);
+				finish();
+			} else {
+				DatosManager.setInstancia(instanciaDM);
+			}
+		}
+		
+		preferencesNavegacion= getSharedPreferences("Navegacion", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		
+		Bundle extras = getIntent().getExtras();
+		if (extras != null) {
+			// idReporte = DatosManager.getInstancia().getIdReporte();
+			codReporte = extras.getInt("codReporte");
+			idCabecera = extras.getInt("idCabecera");
+		}
+
+		titulo = (TextView) findViewById(R.id.textView1);
+		titulo.setText("Motivos");
+
+		mRepController = new E_MstMotivoReporteController(db);
+		reportesController = new ReportesController(db);
+
+		motivoRep = mRepController.getMotivoReporteByIdReporte(codReporte);
+
+		if (codReporte == TiposReportes.COD_REP_EXHIBICION) {
+			exhib = reportesController.getReporteExhibByIdCab(idCabecera);
+		} else if (codReporte == TiposReportes.COD_REP_ASESORAMIENTO_PRODUCTOS) {
+			reportesCap = reportesController.getReportesCapacitbyIdCab(idCabecera);
+		} else if (codReporte == TiposReportes.COD_REP_MARCAJE_PRECIOS){
+			reportesMarcajeP = reportesController.getReportesMarcajePreciobyIdCab(idCabecera);
+		}
+
+		idMotivo = new String[motivoRep.size()];
+		ListView lstOpciones = getListView();
+		for (int i = 0; i < motivoRep.size(); i++) {
+			E_MotivoReporte motivo = motivoRep.get(i);
+			idMotivo[i] = motivo.getNom_motivo();
+		}
+		ArrayAdapter<String> adaptador = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, idMotivo);
+		setListAdapter(adaptador);
+		lstOpciones.setOnItemClickListener(new OnItemClickListener() {
+
+			public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+				final AlertDialog alertDialog = new AlertDialog.Builder(MotivosActivity.this).create();
+
+				alertDialog.setTitle("Alerta");
+				final E_MotivoReporte motivo = motivoRep.get(position);
+				if (codReporte == TiposReportes.COD_REP_EXHIBICION) {
+					alertDialog.setMessage("¿Desea registrar motivo de no Exhibición \"" + motivo.getNom_motivo() + "\"?");
+				} else if (codReporte == TiposReportes.COD_REP_ASESORAMIENTO_PRODUCTOS) {
+					alertDialog.setMessage("¿Desea registrar motivo de no Asesoramiento \"" + motivo.getNom_motivo() + "\"?");
+				} else if (codReporte == TiposReportes.COD_REP_MARCAJE_PRECIOS) {
+					alertDialog.setMessage("¿Desea registrar motivo de no Marcaje \"" + motivo.getNom_motivo() + "\"?");
+				}
+				
+				alertDialog.setButton("Si", new DialogInterface.OnClickListener() {
+
+					public void onClick(DialogInterface dialog, int which) {
+
+						if (codReporte == TiposReportes.COD_REP_EXHIBICION) {
+							if (exhib == null) {
+								exhib = new E_ReporteExhibicion();
+								exhib.setId_reporte_cab(idCabecera);
+							} else {
+								List<E_ReporteExhibicionDet> detalles = exhib.getDetalles();
+								if (detalles != null && !detalles.isEmpty()) {
+									for (E_ReporteExhibicionDet det : detalles) {
+										if (det.getValor_exhib() != null && det.getValor_exhib().equalsIgnoreCase("1")) {
+											det.setValor_exhib("0");
+											det.setId_rep_exhib(exhib.getId());
+											reportesController.insert_update_ReporteExhibicionDet(det);
+										}
+									}
+								}
+								exhib.setDetalles(null);
+							}
+							exhib.setCod_motivo(motivo.getCod_motivo());
+							reportesController.insert_update_ReporteExhibicion(exhib);
+
+						} else if (codReporte == TiposReportes.COD_REP_ASESORAMIENTO_PRODUCTOS) {
+							if (reportesCap != null) {
+								for (E_ReporteCapacitacion elementV : reportesCap) {
+									if (elementV.getValor_capacitacion() != null && elementV.getValor_capacitacion().equalsIgnoreCase("1")) {
+										elementV.setValor_capacitacion("0");
+										reportesController.insert_update_ReporteCapacitacion(elementV);
+									}
+								}
+							}
+							E_ReporteCapacitacion repCapacitacion = new E_ReporteCapacitacion();
+							repCapacitacion.setCod_motivo(motivo.getCod_motivo());
+							repCapacitacion.setValor_motivo("1");
+							repCapacitacion.setCod_reporte_cab(idCabecera);
+							reportesController.insert_update_ReporteCapacitacion(repCapacitacion);
+						}else if (codReporte == TiposReportes.COD_REP_MARCAJE_PRECIOS) {
+							if (reportesMarcajeP != null) {
+								for (E_ReporteMarcajePrecio elementV : reportesMarcajeP) {
+									if (elementV.getCantidad() != null && !elementV.getCantidad().isEmpty()) {
+										elementV.setCantidad(null);
+										reportesController.insert_update_ReporteMarcajePrecio(elementV);
+									}
+								}
+							}
+							E_ReporteMarcajePrecio repMarcajePrecio = new E_ReporteMarcajePrecio();
+							repMarcajePrecio.setCod_motivo(motivo.getCod_motivo());
+							repMarcajePrecio.setCod_reporte_cab(idCabecera);
+							reportesController.insert_update_ReporteMarcajePrecio(repMarcajePrecio);
+						}
+						
+						DatosManager.getInstancia().actualizarCabecera(idCabecera, db);
+						DatosManager.getInstancia().setGuardoReporte(true);
+						String resultadoGuardar = "Reporte Guardado Exitosamente";
+						Toast.makeText(MotivosActivity.this, resultadoGuardar, Toast.LENGTH_SHORT).show();
+						Intent nombre = new Intent(MotivosActivity.this, ListaDeReporte.class);
+						nombre.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						startActivity(nombre);
+						String keyReportes = preferencesNavegacion.getString("keyReportes", "");
+						DatosManager.getInstancia().clearNavegacion(MotivosActivity.this);
+
+					}
+				});
+				alertDialog.setButton2("No", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+
+					}
+				});
+				alertDialog.show();
+			}
+		});
+	}
+
+	public void showProgressDialog() {
+		DialogInterface.OnCancelListener dialogCancel = new DialogInterface.OnCancelListener() {
+
+			public void onCancel(DialogInterface dialog) {
+				Toast.makeText(getBaseContext(), "Señal GPS no encontrada", Toast.LENGTH_LONG).show();
+			}
+		};
+		pd = ProgressDialog.show(this, "Guardando...", "Guardando Motivo de no visita", true, true, dialogCancel);
+	}
+
+
+}

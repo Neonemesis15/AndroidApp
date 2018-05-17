@@ -1,0 +1,104 @@
+package com.org.seratic.lucky.accessData.entities;
+
+public class E_ReporteFotografico extends Entity {
+	int id;
+	int idusuario;
+	int idpuntoDeVenta;
+	int idFiltro;
+	String comentario;
+	String nombreImg;
+	int puntoGPS;
+	int estado;
+	int envioFoto;
+
+	public E_ReporteFotografico() {
+		super();
+	}
+
+	public E_ReporteFotografico(int id, int idusuario, int idpuntoDeVenta,
+			int idFiltro, String comentario, String nombreImg, int puntoGPS,
+			int estado, int envioFoto) {
+		super();
+		this.id = id;
+		this.idusuario = idusuario;
+		this.idFiltro = idFiltro;
+		this.comentario = comentario;
+		this.nombreImg = nombreImg;
+		this.puntoGPS = puntoGPS;
+		this.estado = estado;
+		this.envioFoto = envioFoto;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getIdusuario() {
+		return idusuario;
+	}
+
+	public void setIdusuario(int idusuario) {
+		this.idusuario = idusuario;
+	}
+
+	public int getIdpuntoDeVenta() {
+		return idpuntoDeVenta;
+	}
+
+	public void setIdpuntoDeVenta(int idpuntoDeVenta) {
+		this.idpuntoDeVenta = idpuntoDeVenta;
+	}
+
+	public int getIdFiltro() {
+		return idFiltro;
+	}
+
+	public void setIdFiltro(int idFiltro) {
+		this.idFiltro = idFiltro;
+	}
+
+	public String getComentario() {
+		return comentario;
+	}
+
+	public void setComentario(String comentario) {
+		this.comentario = comentario;
+	}
+
+	public String getNombreImg() {
+		return nombreImg;
+	}
+
+	public void setNombreImg(String nombreImg) {
+		this.nombreImg = nombreImg;
+	}
+
+	public int getPuntoGPS() {
+		return puntoGPS;
+	}
+
+	public void setPuntoGPS(int puntoGPS) {
+		this.puntoGPS = puntoGPS;
+	}
+
+	public int getEstado() {
+		return estado;
+	}
+
+	public void setEstado(int estado) {
+		this.estado = estado;
+	}
+
+	public int getEnvioFoto() {
+		return envioFoto;
+	}
+
+	public void setEnvioFoto(int envioFoto) {
+		this.envioFoto = envioFoto;
+	}
+	
+}

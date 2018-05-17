@@ -1,0 +1,77 @@
+package com.org.seratic.lucky.model;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.org.seratic.lucky.accessData.entities.E_TblMovReporteCab;
+
+public class E_Reporte_Codigo_ITT_Mov {
+
+	// a string codigo punto de venta
+	// b List<E_Codigo_ITT_Distribuidora>
+	// c List<E_Codigo_ITT_Nueva_Distribuidora>
+
+	private String a;
+	private List<E_Codigo_ITT_Distribuidora> b;
+	private List<E_Codigo_ITT_Nueva_Distribuidora> c;
+
+	public void setDatosPrueba1() {
+		a = "BODE001";
+
+		E_Codigo_ITT_Distribuidora b1 = new E_Codigo_ITT_Distribuidora();
+		b1.setDatosPrueba1();
+
+		E_Codigo_ITT_Distribuidora b2 = new E_Codigo_ITT_Distribuidora();
+		b2.setDatosPrueba2();
+
+		b = new ArrayList<E_Codigo_ITT_Distribuidora>();
+		b.add(b1);
+		b.add(b2);
+
+		E_Codigo_ITT_Nueva_Distribuidora c1 = new E_Codigo_ITT_Nueva_Distribuidora();
+		c1.setDatosPrueba1();
+		c = new ArrayList<E_Codigo_ITT_Nueva_Distribuidora>();
+		c.add(c1);
+	}
+
+	public E_Reporte_Codigo_ITT_Mov() {
+	}
+
+	public E_Reporte_Codigo_ITT_Mov(E_TblMovReporteCab emovRepCab, List<E_Codigo_ITT_Distribuidora> e_Codigo_ITT_Distribuidora, List<E_Codigo_ITT_Nueva_Distribuidora> e_Codigo_ITT_Nueva_Distribuidora) {
+		this.a = emovRepCab.getId_punto_de_venta();
+
+//		List<E_Codigo_ITT_Distribuidora> lista = new ArrayList<E_Codigo_ITT_Distribuidora>();
+//		lista.add(e_Codigo_ITT_Distribuidora);
+		this.b = e_Codigo_ITT_Distribuidora;
+
+//		List<E_Codigo_ITT_Nueva_Distribuidora> lista1 = new ArrayList<E_Codigo_ITT_Nueva_Distribuidora>();
+//		lista1.add(e_Codigo_ITT_Nueva_Distribuidora);
+		this.c = e_Codigo_ITT_Nueva_Distribuidora;
+
+	}
+
+	public String getA() {
+		return a;
+	}
+
+	public void setA(String a) {
+		this.a = a;
+	}
+
+	public List<E_Codigo_ITT_Distribuidora> getB() {
+		return b;
+	}
+
+	public void setB(List<E_Codigo_ITT_Distribuidora> b) {
+		this.b = b;
+	}
+
+	public List<E_Codigo_ITT_Nueva_Distribuidora> getC() {
+		return c;
+	}
+
+	public void setC(List<E_Codigo_ITT_Nueva_Distribuidora> c) {
+		this.c = c;
+	}
+
+}

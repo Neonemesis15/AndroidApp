@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tr_reporte_precio_sanfernando_tradicional_chikara"
+    android:layout_width="fill_parent"
+    android:layout_height="25dp" >
+
+    <TextView
+        android:id="@+id/tv_sku"
+        style="@style/TextoBodyGrilla2"
+        android:width="80dp" />
+
+    <EditText
+        android:id="@+id/et_ppvp"
+        style="@style/TextoBodyGrilla2"
+        android:numeric="decimal"
+        android:singleLine="true"
+        android:width="120dp" />
+
+    <EditText
+        android:id="@+id/et_ppvd"
+        style="@style/TextoBodyGrilla2"
+        android:numeric="decimal"
+        android:singleLine="true"
+        android:width="120dp" />
+
+</TableRow>

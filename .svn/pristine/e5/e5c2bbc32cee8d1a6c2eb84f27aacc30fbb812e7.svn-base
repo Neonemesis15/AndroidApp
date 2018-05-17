@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tr_reporte_presencia_visib_competencia_cod_cant"
+    android:layout_width="fill_parent"
+    android:layout_height="25dp" >
+
+    <TextView
+        android:id="@+id/tv_codigo"
+        style="@style/TextoBodyGrilla2"
+        android:width="60dp" />
+
+    <EditText
+        android:id="@+id/et_cantidad"
+        style="@style/TextoBodyGrilla2"
+        android:numeric="integer"
+        android:singleLine="true"
+        android:width="60dp" />
+
+</TableRow>

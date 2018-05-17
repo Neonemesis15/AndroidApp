@@ -1,0 +1,317 @@
+package com.org.seratic.lucky;
+
+
+import java.io.InputStream;
+import java.util.List;
+
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
+import android.os.Bundle;
+import android.provider.MediaStore;
+import android.text.InputFilter;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.MediaController;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.VideoView;
+
+import com.org.seratic.lucky.accessData.SQLiteDatabaseAdapter;
+import com.org.seratic.lucky.accessData.control.E_tbl_mov_fotosController;
+import com.org.seratic.lucky.accessData.control.E_tbl_mov_videosController;
+import com.org.seratic.lucky.accessData.entities.E_tbl_mov_fotos;
+import com.org.seratic.lucky.accessData.entities.E_tbl_mov_videos;
+import com.org.seratic.lucky.manager.CustomTextWatcher;
+import com.org.seratic.lucky.manager.DatosManager;
+
+
+
+public class ReporteVideo extends Activity {
+	/** Called when the activity is first created. */
+	private static int ACTION_TAKE_VIDEO = 1;
+	private static final int TAM_MAX_VIDEO = 2652160;
+
+	private VideoView mVideoView;
+	private Uri mVideoUri;
+	public static Boolean agregaVideo = false;
+	public static int i = 0;
+
+	private int idCabecera = 0;
+	private SQLiteDatabase db;
+
+	private Button btn;
+
+	private EditText comentario;
+	private boolean tomoVideo;
+	private TextView tituloReporte;
+	private SharedPreferences preferencesNavegacion, prefVideo;
+	private int ancho = 0;
+	private int alto = 0;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		Log.i("", "onCreate(Reporte Video)");
+		requestWindowFeature(Window.FEATURE_NO_TITLE);
+
+		setContentView(R.layout.ly_reporte_video);
+		tituloReporte = (TextView) findViewById(R.id.txtReporte);
+		tituloReporte.setText("Reporte Video");
+
+		SQLiteDatabaseAdapter aSQLiteDatabaseAdapter = SQLiteDatabaseAdapter.getInstance(this);
+		db = aSQLiteDatabaseAdapter.getWritableDatabase();
+		if (DatosManager.getInstancia().getUsuario() == null) {
+			DatosManager instanciaDM = (DatosManager) getLastNonConfigurationInstance();
+			if (instanciaDM == null) {
+				Log.i("Empresa", "Instancia recuperada Null");
+				DatosManager.getInstancia().cargarDatos(db);
+				SharedPreferences prefContenedor = getSharedPreferences("ContenedorReporte", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+				int idReporte = prefContenedor.getInt("idReporte", 0);
+				int idSubreporte = prefContenedor.getInt("idSubReporte", 0);
+				DatosManager.getInstancia().setIdReporte(idReporte);
+				DatosManager.getInstancia().setIdSubReporteActivo(idSubreporte);
+			} else {
+				DatosManager.setInstancia(instanciaDM);
+			}
+		} else {
+			tomoVideo = false;
+		}
+		preferencesNavegacion = getSharedPreferences("Navegacion", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		prefVideo = getSharedPreferences("ReporteVideo", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		//DatosManager.getInstancia().setFotoTomada(false);
+		btn = (Button) findViewById(R.id.guardarFoto);
+		btn.setOnClickListener(new OnClickListener() {
+			public void onClick(View v) {
+				confirmar();
+			}
+		});
+
+		comentario = (EditText) findViewById(R.id.et_comentario);
+		comentario.setFilters(new InputFilter[] { new CustomTextWatcher(comentario) });
+
+		mVideoView = (VideoView) findViewById(R.id.vv_video);	
+		ancho = mVideoView.getLayoutParams().width;
+		alto = mVideoView.getLayoutParams().height;
+		Log.i("ReporteVideo", "alto video: " + alto + " ancho video: " + ancho);
+		MediaController mc = new MediaController(this);		
+		
+		mVideoView.setMediaController(mc);		
+
+		Bundle extras = getIntent().getExtras();
+		if (extras != null) {
+			idCabecera = extras.getInt("idCabecera");
+		}
+
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		// super.onActivityResult(requestCode, resultCode, data);
+		Log.i("ResultadoVideo", "-" + resultCode + "-" + requestCode);
+		Log.i("ReporteVideo", "comentario despues de tomar la foto: " + comentario.getText().toString());
+		prefVideo = getSharedPreferences("RepVideo", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		comentario.setText(prefVideo.getString("comentario", ""));
+		alto = prefVideo.getInt("alto", 0);
+		ancho = prefVideo.getInt("ancho", 0);
+		Editor editor = prefVideo.edit();
+		editor.clear();
+		editor.commit();
+		if (resultCode == -1 && requestCode == ACTION_TAKE_VIDEO) {
+			// mostrarMensaje(getString(R.string.reporte_fot_cargandoFoto));
+			handleCameraVideo(data);
+		} else {
+			finish();
+		}
+	}
+
+	public void guardar(int idCabeceraGuardada) {
+
+		btn.setEnabled(false);
+		mostrarMensaje(getString(R.string.reportes_general_guardando));
+		SQLiteDatabaseAdapter aSQLiteDatabaseAdapter = SQLiteDatabaseAdapter.getInstance(this);
+		db = aSQLiteDatabaseAdapter.getWritableDatabase();
+		Log.i("*", "Guardando Reporte de Video ");
+		DatosManager.getInstancia().crearReporteVideo(comentario.getText().toString(), idCabeceraGuardada, db, mVideoUri.toString(), this);
+		ReporteVideo.i++;
+		ReporteVideo.agregaVideo = true;
+		DatosManager.getInstancia().setGuardoReporte(true);
+		String keyReportes = preferencesNavegacion.getString("keyReportes", "");
+		Log.i("ReporteVideo", "keyReportes: " + keyReportes);
+		DatosManager.getInstancia().clearNaveKey(ReporteVideo.this, keyReportes);
+		mVideoView = null;
+		finish();
+	}
+
+	public void mostrarMensaje(String msg) {
+		// dialog=ProgressDialog.show(ReporteFotografico.this, "", msg, true);
+	}
+
+	public boolean validarDatos() {
+		boolean isValido = true;
+		String coment = comentario.getText().toString();
+		Log.i("ReporteVideo", "Comentario a validar = " + coment);
+		if (coment == null || coment.trim().isEmpty() || mVideoUri==null || mVideoUri.toString().trim().isEmpty() || DatosManager.getInstancia().validarCaracteresEspeciales(coment).isEmpty()) {
+			isValido = false;
+		}
+		return isValido;
+	}
+
+	public void confirmar() {
+		if (validarDatos()) {
+			AlertDialog alertDialog = new AlertDialog.Builder(ReporteVideo.this).create();
+
+			alertDialog.setMessage(getString(R.string.reportes_itt_guardar_alert) + "  Video?");
+
+			alertDialog.setButton("Si", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+					guardar(idCabecera);
+				}
+			});
+			alertDialog.setButton2("No", new DialogInterface.OnClickListener() {
+				public void onClick(DialogInterface dialog, int which) {
+				}
+			});
+			alertDialog.show();
+		} else {
+			Toast.makeText(this, "Datos incompletos o no válidos", Toast.LENGTH_SHORT).show();
+		}
+	}
+
+	@Override
+	public void onBackPressed() {
+		if(mVideoUri!=null){
+			getContentResolver().delete(mVideoUri, null, null);
+		}
+		tomoVideo = false;
+		String keyReportes = preferencesNavegacion.getString("keyReportes", "");
+		DatosManager.getInstancia().clearNaveKey(ReporteVideo.this, keyReportes);
+		// TODO Auto-generated method stub
+		super.onBackPressed();
+		finish();
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Alternativa
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.menu_video, menu);
+		return true;
+
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		iniciarGrabacion();
+		return true;
+	}
+	
+	public void iniciarGrabacion(){
+		if (DatosManager.getInstancia().getUsuario() == null) {
+			SQLiteDatabaseAdapter aSQLiteDatabaseAdapter = SQLiteDatabaseAdapter.getInstance(this);
+			db = aSQLiteDatabaseAdapter.getWritableDatabase();
+
+			DatosManager instanciaDM = (DatosManager) getLastNonConfigurationInstance();
+			if (instanciaDM == null) {
+				Log.i("ReporteVideo", "Instancia recuperada Null");
+				DatosManager.getInstancia().cargarDatos(db);
+			} else {
+				DatosManager.setInstancia(instanciaDM);
+			}
+		}
+		Log.i("ReporteVideo", "comentario antes de capturar el video: " + comentario.getText().toString());
+		prefVideo = getSharedPreferences("RepVideo", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		Editor editor = prefVideo.edit();
+		editor.putString("comentario", comentario.getText().toString());
+		editor.putInt("alto", alto);
+		editor.putInt("ancho", ancho);
+		editor.commit();
+
+		Intent intent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+		intent.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 0); // set the video image quality to low
+		intent.putExtra(MediaStore.EXTRA_SIZE_LIMIT, 2995276); // set the video image quality to low
+		startActivityForResult(intent, ACTION_TAKE_VIDEO);
+	}
+
+	public static boolean isIntentAvailable(Context context, String action) {
+		final PackageManager packageManager = context.getPackageManager();
+		final Intent intent = new Intent(action);
+		List<ResolveInfo> list = packageManager.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY);
+		return list.size() > 0;
+	}
+
+	private void handleCameraVideo(Intent intent) {
+		tomoVideo = true;
+		mVideoUri = intent.getData();
+		
+		if(mVideoUri!=null){
+			InputStream inputStream = null;
+			int len = TAM_MAX_VIDEO;
+			try {
+				inputStream = getContentResolver().openInputStream(mVideoUri);
+				len = inputStream.available();
+				inputStream.close();
+				inputStream = null;
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Log.i("ReporteVideo", "Tamaño video = " + len);
+			if(len<TAM_MAX_VIDEO){
+				mVideoView.setVideoURI(mVideoUri);
+				mVideoView.setVisibility(View.VISIBLE);
+				mVideoView.getLayoutParams().height = alto;
+				mVideoView.getLayoutParams().width = ancho;
+				mVideoView.invalidate();
+			}
+			else {
+				getContentResolver().delete(mVideoUri, null, null);
+				tomoVideo = false;
+				Toast.makeText(ReporteVideo.this, "El tamaño del video (" + len + ") supera el tamaño máximo permitido (" + TAM_MAX_VIDEO + "); vuelva a grabar.", Toast.LENGTH_LONG).show();
+				iniciarGrabacion();
+			}
+			
+			forzarEnvioArchivos();
+		}
+	}
+	
+	private void forzarEnvioArchivos(){
+		// forzar el envio de las fotos
+		new Thread() {
+			public void run() {
+				List<E_tbl_mov_fotos> fotos = new E_tbl_mov_fotosController(db).isPendienteEnvio(E_tbl_mov_fotos.FOTO_GUARDADA_PARA_ENVIO);
+				if (fotos != null && db != null) {
+					Log.i("ReporteVideo", "Fotos a enviar:  " + fotos.size());
+					DatosManager.getInstancia().enviarFoto(fotos, db, ReporteVideo.this);
+				} else {
+					Log.i("ReporteVideo", "No hay Fotos por enviar ");
+				}
+				List<E_tbl_mov_videos> archivos = new E_tbl_mov_videosController(db).isPendienteEnvio(E_tbl_mov_videos.VIDEO_GUARDADO_PARA_ENVIO);
+				if (archivos != null && db != null) {
+					Log.i("ReporteVideo", "Videos a enviar: " + archivos.size());
+					DatosManager.getInstancia().enviarArchivo(archivos, db, ReporteVideo.this);
+				} else {
+					Log.i("ReporteVideo", "No hay Archivos por enviar ");
+				}
+			}
+		}.start();
+	}
+
+}

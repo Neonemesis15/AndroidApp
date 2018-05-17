@@ -1,0 +1,141 @@
+package com.org.seratic.lucky;
+
+import java.util.List;
+
+import android.app.AlertDialog;
+import android.app.ListActivity;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
+
+import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.org.seratic.lucky.accessData.SQLiteDatabaseAdapter;
+
+import com.org.seratic.lucky.accessData.control.E_MstCreditoController;
+import com.org.seratic.lucky.accessData.control.ReportesController;
+import com.org.seratic.lucky.accessData.entities.E_MstCredito;
+import com.org.seratic.lucky.accessData.entities.E_ReporteCredito;
+
+import com.org.seratic.lucky.manager.DatosManager;
+
+public class ReporteCreditoCompetencia extends ListActivity {
+	List<E_MstCredito> creditos;
+	private SQLiteDatabase db;
+	String[] idMotivo;
+	E_MstCreditoController creditoController;
+	ProgressDialog pd;
+	int codReporte;
+	int idCabecera;
+	TextView titulo;
+	TextView subtitulo;
+	ReportesController reportesController;
+	E_ReporteCredito repCredito;
+	SharedPreferences preferencesNavegacion;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.ly_motivonovisita);
+		SQLiteDatabaseAdapter aSQLiteDatabaseAdapter = SQLiteDatabaseAdapter.getInstance(this);
+		db = aSQLiteDatabaseAdapter.getWritableDatabase();
+		if (DatosManager.getInstancia().getUsuario() == null) {
+			DatosManager instanciaDM = (DatosManager) getLastNonConfigurationInstance();
+			if (instanciaDM == null) {
+				Log.i("Reporte Credito Activity", "Instancia recuperada Null");
+				DatosManager.getInstancia().cargarDatos(db);
+				finish();
+			} else {
+				DatosManager.setInstancia(instanciaDM);
+			}
+		}
+		titulo = (TextView) findViewById(R.id.textView1);
+		titulo.setText("Reporte Credito Competencia");
+
+		subtitulo = (TextView) findViewById(R.id.textViewSub);
+		
+		preferencesNavegacion= getSharedPreferences("Navegacion", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		
+		Bundle extras = getIntent().getExtras();
+		if (extras != null) {
+			// idReporte = DatosManager.getInstancia().getIdReporte();
+			codReporte = extras.getInt("codReporte");
+			idCabecera = extras.getInt("idCabecera");
+		}
+		creditoController = new E_MstCreditoController(db);
+		reportesController = new ReportesController(db);
+
+		creditos = creditoController.getCreditosByIdReporte(codReporte);
+		if(creditos!=null){
+			idMotivo = new String[creditos.size()];
+			for (int i = 0; i < creditos.size(); i++) {
+				E_MstCredito cred = creditos.get(i);
+				idMotivo[i] = cred.getNom_credito();
+			}
+		
+		ListView lstOpciones = getListView();
+		
+		List<E_ReporteCredito> listReporte = reportesController.getReporteCreditoByIdCab(idCabecera);
+		if (listReporte != null && !listReporte.isEmpty()) {
+			repCredito = listReporte.get(0);
+			if (repCredito != null) {
+				subtitulo.setText(creditoController.getCreditoByCodCredito(Integer.valueOf(repCredito.getCod_credito()), codReporte).getNom_credito());
+			}
+		}
+		
+		ArrayAdapter<String> adaptador = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, idMotivo);
+		setListAdapter(adaptador);
+		lstOpciones.setOnItemClickListener(new OnItemClickListener() {
+
+			public void onItemClick(AdapterView<?> a, View v, int position, long id) {
+				final AlertDialog alertDialog = new AlertDialog.Builder(ReporteCreditoCompetencia.this).create();
+
+				alertDialog.setTitle("Alerta");
+				final E_MstCredito cred = creditos.get(position);
+				alertDialog.setMessage("¿Desea registrar el crédito \"" + cred.getNom_credito() + "\"?");
+
+				alertDialog.setButton("Si", new DialogInterface.OnClickListener() {
+
+					public void onClick(DialogInterface dialog, int which) {
+						if (repCredito == null) {
+							repCredito = new E_ReporteCredito();
+							repCredito.setCod_reporte_cab(idCabecera);
+						}
+						repCredito.setCod_credito(cred.getCod_credito());
+						reportesController.insert_update_ReporteCredito(repCredito);
+						DatosManager.getInstancia().actualizarCabecera(idCabecera, db);
+						DatosManager.getInstancia().setGuardoReporte(true);
+						String resultadoGuardar = "Reporte Guardado Exitosamente";
+						Toast.makeText(ReporteCreditoCompetencia.this, resultadoGuardar, Toast.LENGTH_SHORT).show();
+						Intent nombre = new Intent(ReporteCreditoCompetencia.this, ListaDeReporte.class);
+						nombre.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+						startActivity(nombre);
+						String keyReportes = preferencesNavegacion.getString("keyReportes", "");
+						DatosManager.getInstancia().clearNavegacion(ReporteCreditoCompetencia.this);
+
+					}
+				});
+				alertDialog.setButton2("No", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+
+					}
+				});
+				alertDialog.show();
+			}
+		});
+		}else{
+			Toast.makeText(getApplicationContext(), "No hay créditos registrados para este reporte", Toast.LENGTH_LONG).show();
+		}
+	}
+
+}

@@ -1,0 +1,76 @@
+package com.org.seratic.lucky.accessData.control;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+import com.org.seratic.lucky.accessData.entities.E_TBL_MOV_REP_COD_ITT;
+import com.org.seratic.lucky.accessData.entities.Entity;
+
+public class TblMovRepCodigoITTController extends EntityController {
+
+	private SQLiteDatabase db;
+	private Cursor dbCursor;
+
+	public TblMovRepCodigoITTController(SQLiteDatabase db) {
+		super();
+		this.db = db;
+	}
+
+	@Override
+	public boolean create(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean edit(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean remove(Entity e) {
+		E_TBL_MOV_REP_COD_ITT c = (E_TBL_MOV_REP_COD_ITT) e;
+		try {
+			db.delete("TBL_MOV_REP_COD_ITT", "id = ?",
+					new String[] { String.valueOf(c.getId()) });
+			return true;
+		} catch (Exception ex) {
+			return false;
+		}
+	}
+
+	@Override
+	public List<Entity> getAll() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public List<E_TBL_MOV_REP_COD_ITT> getByIdRepCab(int idRepCab) {
+		List<E_TBL_MOV_REP_COD_ITT> list = null;
+		
+		String sql = "SELECT id, id_reporte_cab, cod_distribuidora, tipo_asociacion FROM TBL_MOV_REP_COD_ITT WHERE id_reporte_cab = "
+				+ idRepCab;
+
+		dbCursor = db.rawQuery(sql, null);
+		if (dbCursor.getCount() > 0) {
+			dbCursor.moveToFirst();
+			list = new ArrayList<E_TBL_MOV_REP_COD_ITT>();
+			while (!dbCursor.isAfterLast()) {
+				E_TBL_MOV_REP_COD_ITT repCodigoITT = new E_TBL_MOV_REP_COD_ITT();
+				repCodigoITT.setId(dbCursor.getInt(0));
+				repCodigoITT.setId_reporte_cab(idRepCab);
+				repCodigoITT.setId_distribuidora(dbCursor.getInt(2));
+				repCodigoITT.setTipo_asociacion(dbCursor.getString(3));
+				list.add(repCodigoITT);
+				dbCursor.moveToNext();
+			}
+		}
+		return list;
+
+	}
+
+}

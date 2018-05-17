@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tr_reporte_precio_pdv_pdv_sanfernando_aavv"
+    android:layout_width="fill_parent"
+    android:layout_height="25dp" >
+
+    <TextView
+        android:id="@+id/tv_sku"
+        style="@style/TextoBodyGrilla2"
+        android:width="80dp" />
+
+    <EditText
+        android:id="@+id/et_ppdv"
+        style="@style/TextoBodyGrilla2"
+        android:inputType="numberDecimal"
+        android:singleLine="true"
+        android:width="80dp" />
+
+    <Spinner
+        android:id="@+id/sp_tipo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1" />
+
+</TableRow>

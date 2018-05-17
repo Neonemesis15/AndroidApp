@@ -1,0 +1,70 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/tv_subtitulo"
+        style="@style/Subtitulo" />
+
+    <HorizontalScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true"
+        android:scrollbars="none" >
+
+        <LinearLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="wrap_content"
+            android:layout_height="fill_parent"
+            android:orientation="vertical" >
+
+            <TableLayout
+                android:layout_width="fill_parent"
+                android:layout_height="30dp"
+                android:stretchColumns="*" >
+
+                <TableRow style="@style/HeadGrilla" >
+
+                    <TextView
+                        style="@style/TextoHeadGrilla"
+                        android:text="Sku"
+                        android:width="50dp" />
+
+                    <TextView
+                        style="@style/TextoHeadGrilla"
+                        android:text="Exhibición"
+                        android:width="120dp" />
+
+                    <TextView
+                        style="@style/TextoHeadGrilla"
+                        android:text="Cámara"
+                        android:width="80dp" />
+
+                    <TextView
+                        style="@style/TextoHeadGrilla"
+                        android:text="Motivo"
+                        android:width="130dp" />
+
+                    <TextView
+                        style="@style/TextoHeadGrilla"
+                        android:text="Ingresos"
+                        android:width="100dp" />
+                </TableRow>
+            </TableLayout>
+
+            <ScrollView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" >
+
+                <TableLayout
+                    android:id="@+id/tl_reporte_ingreso_sanfernando_moderno"
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:stretchColumns="*" >
+                </TableLayout>
+            </ScrollView>
+        </LinearLayout>
+    </HorizontalScrollView>
+
+</LinearLayout>

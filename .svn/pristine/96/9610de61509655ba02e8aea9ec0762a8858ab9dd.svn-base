@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/fondo"
+    android:orientation="vertical" android:padding="5dp">
+	<ScrollView android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+        <!-- se colocal el LinearLayout que contendra el formulario -->
+        <LinearLayout android:orientation="vertical"
+            android:layout_width="fill_parent" android:layout_height="fill_parent" android:padding="5dp">
+    	 <RelativeLayout
+            android:layout_width="fill_parent" android:layout_height="wrap_content">
+
+    	     <ImageButton
+    	         android:id="@+id/imageButton2"
+    	         android:layout_width="wrap_content"
+    	         android:layout_height="wrap_content"
+    	         android:src="@drawable/selector_btn" android:clickable="true" android:onClick="agregar" android:background="#00FFFFFF" android:layout_alignParentTop="true" android:layout_alignParentRight="true"/>
+
+    	     <ImageButton
+    	         android:id="@+id/imageButton1"
+    	         android:layout_width="wrap_content"
+    	         android:layout_height="wrap_content"
+    	         android:layout_alignParentTop="true"
+    	         android:layout_toLeftOf="@+id/imageButton2"
+    	         android:background="#00FFFFFF"
+    	         android:clickable="true"
+    	         android:onClick="guardar"
+    	         android:src="@drawable/selector_btn_guardar" android:layout_marginRight="20dp"/>
+    	     
+    	     <TextView
+	        android:id="@+id/textView1"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignLeft="@+id/imageButton2"
+	        android:text="Distribuidoras"
+	        android:textAppearance="?android:attr/textAppearanceMedium" android:layout_alignRight="@+id/imageButton2" android:layout_alignTop="@+id/imageButton2" android:layout_alignBottom="@+id/imageButton2" android:gravity="center_vertical|center_horizontal" android:background="#00FFFFFF"/>
+    	     
+
+          </RelativeLayout>
+    
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVNombre"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/etNombre"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:maxLength="50" >
+
+        <requestFocus />
+    </EditText>
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVApellido"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/etApellido"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:maxLength="50" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVRazon"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/etRazon"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:maxLength="100" />
+         	
+ 	<TextView
+        android:id="@+id/textViewTipo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroTipoDocumento"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+                    
+    <Spinner
+        android:id="@+id/spTipoDocumento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />    
+   
+   <TextView
+        android:id="@+id/textViewDNI"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVDNI"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+        
+
+    <EditText
+        android:id="@+id/etDNI"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:maxLength="15" />
+
+    <TextView
+        android:id="@+id/textViewRUC"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVRUC"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:visibility="gone" />
+
+    <EditText
+        android:id="@+id/etRUC"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:visibility="gone"
+        android:maxLength="30" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVDepartamento"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <Spinner
+        android:id="@+id/spDepartamento"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/textView7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVProvicia"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+    <Spinner
+        android:id="@+id/spProvincia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/textView8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVDistrito"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+    <Spinner
+        android:id="@+id/spDistrito"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/textView9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVDireccion"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+    <EditText
+        android:id="@+id/etDireccion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:maxLength="250" />
+
+    <TextView
+        android:id="@+id/textView10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVTipoPoblacion"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+    <Spinner
+        android:id="@+id/spTipoPoblacion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/textView11"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVReferencia"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+    <EditText
+        android:id="@+id/etReferencia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:maxLength="250" />
+    
+    
+    <TextView
+        android:id="@+id/textView11"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVTelefono"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+    <EditText
+        android:id="@+id/etTelefono"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="phone"
+        android:maxLength="15" />
+	</LinearLayout>
+	</ScrollView>
+</LinearLayout>

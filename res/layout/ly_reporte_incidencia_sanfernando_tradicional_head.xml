@@ -1,0 +1,47 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/tv_subtitulo"
+        style="@style/Subtitulo" />
+
+  
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="30dp"
+        android:stretchColumns="*" >
+
+        <TableRow style="@style/HeadGrilla" >
+
+            <TextView
+                style="@style/TextoHeadGrilla"
+                android:width="80dp" 
+                android:text="Id"/>
+
+            <TextView
+                style="@style/TextoHeadGrilla"
+                android:text="Seleccione"
+                android:width="80dp" />
+            <TextView
+                style="@style/TextoHeadGrilla"
+                android:text="Cantidad"
+                android:width="80dp" />
+
+        </TableRow>
+    </TableLayout>
+
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent" >
+
+        <TableLayout
+            android:id="@+id/tl_reporte_incidencia_sanfernando_tradicional"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:stretchColumns="*" >
+        </TableLayout>
+    </ScrollView>
+</LinearLayout>

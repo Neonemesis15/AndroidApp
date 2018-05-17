@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/fondo2"
+    android:orientation="vertical"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    >
+
+    <TextView 
+        android:text="Reporte"
+        style="@style/Titulo"/>
+    
+<LinearLayout 
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="right"
+    android:paddingRight="5dp"
+    android:paddingTop="5dp"
+        >
+
+    <Button
+        android:id="@+id/guardarFotoCAlicorp"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_gravity="right"
+        android:layout_marginLeft="15dp"
+        android:background="@drawable/guadar"
+        android:text="" />
+
+    </LinearLayout>
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" 
+        android:padding="10dp">
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Comentario:"
+            android:textAppearance="?android:attr/textAppearanceMedium" 
+            android:layout_gravity="bottom"
+            />
+
+
+
+        <ImageView
+            android:id="@+id/imagenFoto"
+            android:layout_width="100dp"
+            android:layout_height="123dp"
+            android:layout_weight="0.74"
+            android:src="@drawable/ic_launcher" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.73" 
+        android:padding="10dp">
+
+        <EditText
+            android:id="@+id/editTextcomentCAlicorp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="textMultiLine" />
+    </LinearLayout>
+
+</LinearLayout>

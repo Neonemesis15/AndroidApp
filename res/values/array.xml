@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="ar_pendientes">
+        <item>Marcación</item>
+        <item>Estado</item>
+        <item>Visita</item>
+        <item>Reporte</item>
+    </string-array>
+   
+
+</resources>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tr_reporte_ingreso_sanfernando_moderno"
+    android:layout_width="fill_parent"
+    android:layout_height="25dp" >
+
+    <TextView
+        android:id="@+id/tv_sku"
+        style="@style/TextoBodyGrilla2"
+        android:width="50dp" />
+
+    <EditText
+        android:id="@+id/et_exhibicion"
+        style="@style/TextoBodyGrilla2"
+        android:numeric="decimal"
+        android:singleLine="true"
+        android:width="120dp" />
+
+    <EditText
+        android:id="@+id/et_camara"
+        style="@style/TextoBodyGrilla2"
+        android:numeric="decimal"
+        android:singleLine="true"
+        android:width="80dp" />
+
+    <Spinner
+        android:id="@+id/spinnerMotivo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:prompt="@string/mobs_prompt"
+        android:width="130dp" />
+
+    <EditText
+        android:id="@+id/et_ingresos"
+        style="@style/TextoBodyGrilla2"
+        android:numeric="decimal"
+        android:singleLine="true"
+        android:width="100dp" />
+
+</TableRow>

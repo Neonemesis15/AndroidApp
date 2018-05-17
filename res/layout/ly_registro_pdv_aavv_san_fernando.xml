@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/fondo"
+    android:orientation="vertical" android:padding="5dp">
+	<ScrollView android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+        <!-- se colocal el LinearLayout que contendra el formulario -->
+        <LinearLayout android:orientation="vertical"
+            android:layout_width="fill_parent" android:layout_height="fill_parent" android:padding="5dp">
+    	 <RelativeLayout
+            android:layout_width="fill_parent" android:layout_height="wrap_content">
+
+    	     <ImageButton
+    	         android:id="@+id/imageButton1"
+    	         android:layout_width="wrap_content"
+    	         android:layout_height="wrap_content"
+    	         android:layout_alignParentRight="true"
+    	         android:layout_alignParentTop="true"
+    	         android:background="#00FFFFFF"
+    	         android:clickable="true"
+    	         android:onClick="guardar"
+    	         android:src="@drawable/selector_btn_guardar" />
+    	     
+    	 </RelativeLayout>
+    
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVNombre"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/etNombre"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:maxLength="50" >
+
+        <requestFocus />
+    </EditText>
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVApellido"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/etApellido"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:maxLength="50" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVRazon"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <EditText
+        android:id="@+id/etRazon"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:maxLength="100" />
+         	
+ 	<TextView
+        android:id="@+id/textViewTipo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroMercado"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+                    
+    <Spinner
+        android:id="@+id/spMercado"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />    
+   
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroTipoCliente"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <Spinner
+        android:id="@+id/spTipoCliente"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/textView11"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/registroPDVReferencia"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    
+    <EditText
+        android:id="@+id/etReferencia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPersonName"
+        android:maxLength="250" />
+    </LinearLayout>
+	</ScrollView>
+</LinearLayout>

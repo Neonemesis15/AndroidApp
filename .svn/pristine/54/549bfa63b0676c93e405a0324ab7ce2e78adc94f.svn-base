@@ -1,0 +1,46 @@
+package com.org.seratic.lucky.accessData.entities;
+
+public class E_MstCapacitacion extends Entity {
+	String cod_reporte;
+	String cod_capacitacion;
+	String desc_capacitacion;
+	
+	public E_MstCapacitacion(String cod_reporte, String cod_capacitacion,
+			String desc_capacitacion) {
+		super();
+		this.cod_reporte = cod_reporte;
+		this.cod_capacitacion = cod_capacitacion;
+		this.desc_capacitacion = desc_capacitacion;
+	}
+
+	public E_MstCapacitacion() {
+		super();
+	}
+	
+	public String getCod_reporte() {
+		return cod_reporte;
+	}
+
+	public void setCod_reporte(String cod_reporte) {
+		this.cod_reporte = cod_reporte;
+	}
+
+	public String getCod_capacitacion() {
+		return cod_capacitacion;
+	}
+
+	public void setCod_capacitacion(String cod_capacitacion) {
+		this.cod_capacitacion = cod_capacitacion;
+	}
+
+	public String getDesc_capacitacion() {
+		return desc_capacitacion;
+	}
+
+	public void setDesc_capacitacion(String desc_capacitacion) {
+		this.desc_capacitacion = desc_capacitacion;
+	}
+
+	
+
+}

@@ -1,0 +1,45 @@
+package com.org.seratic.lucky.accessData.control;
+
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+import com.org.seratic.lucky.accessData.entities.E_TBL_NOVISITA;
+
+/**
+ * 
+ * @author victor.garzon Diferentes consultas a base detos
+ */
+public class GenericController {
+
+	private SQLiteDatabase db;
+	private Cursor dbCursor;
+
+	public GenericController(SQLiteDatabase db) {
+		super();
+		this.db = db;
+	}
+
+	public E_TBL_NOVISITA getEstadoNoVisitaById(String id_novisita) {
+		// _id INTEGER,
+		// id_novisita VARCHAR(50),
+		// descripcion VARCHAR(50),
+		// PRIMARY KEY(_id)
+		String sql = "SELECT * FROM TBL_NOVISITA where id_novisita = "
+				+ id_novisita;
+		dbCursor = db.rawQuery(sql, null);
+
+		E_TBL_NOVISITA e_TBL_NOVISITA = null;
+		int id;
+		String descripcion;
+		
+		if (dbCursor.moveToFirst()) {
+			id = dbCursor.getInt(0);
+			id_novisita = dbCursor.getString(1);
+			descripcion = dbCursor.getString(2);
+			e_TBL_NOVISITA = new E_TBL_NOVISITA(id, id_novisita, descripcion);
+		}
+	
+		return e_TBL_NOVISITA;
+	}
+
+}

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:background="@drawable/fondo" android:padding="5dp">
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout1"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content">
+
+	    <ImageButton
+		    android:id="@+id/imageButton2"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:src="@drawable/selector_btn_guardar" android:clickable="true" android:onClick="guardar" android:layout_alignParentRight="true" android:scaleType="fitXY" android:layout_alignParentTop="true" android:background="#ffffffff"/>
+
+	    <TextView
+	        android:id="@+id/textView1"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_centerVertical="true"
+	        android:layout_toLeftOf="@+id/imageButton2"
+	        android:text="Motivos No Implementación"
+	        android:textAppearance="?android:attr/textAppearanceMedium" android:gravity="center_vertical|center_horizontal"/>
+	            
+    </RelativeLayout>
+    
+        <ListView
+        android:id="@android:id/android:list"
+        style="@style/Lista"
+        android:layout_width="match_parent"
+        android:layout_weight="1" >
+    </ListView>
+
+</LinearLayout>

@@ -1,0 +1,92 @@
+package com.org.seratic.lucky.accessData.control;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+import com.org.seratic.lucky.accessData.entities.E_ReporteIncidencia;
+import com.org.seratic.lucky.accessData.entities.E_TblFiltrosApp;
+import com.org.seratic.lucky.accessData.entities.E_TblMovReporteCab;
+import com.org.seratic.lucky.accessData.entities.Entity;
+
+public class E_ServicioController extends EntityController {
+	
+	private SQLiteDatabase db;
+	private Cursor dbCursor;
+	
+	public E_ServicioController(SQLiteDatabase db) {
+		this.db = db;
+	}
+	
+
+	@Override
+	public boolean create(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean edit(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean remove(Entity e) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public List<Entity> getAll() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+	public List<Object> getElementsForIncidenciaGrid(int idCabecera) {
+		List<Object> elements = null;
+		E_TblMovReporteCab cab = new E_TblMovReporteCabController(db).getByIdCabecera(idCabecera);
+		E_TblFiltrosApp filtrosApp = new TblMstMovFiltrosAppController(db).getById(cab.getId_filtros_app());
+		String sql =  "SELECT s.cod_servicio, s.nom_servicio, ri.id_foto, ri.has_pedido, ri.comentario from TBL_MST_SERVICIO s ";
+		if (filtrosApp != null) {
+			sql += "join TBL_MOV_FILTROS_APP f ON(";
+			if (filtrosApp.getCod_categoria() != null && !filtrosApp.getCod_categoria().isEmpty()) {
+				sql += "f.cod_categoria = s.cod_categoria";
+			}
+			if (filtrosApp.getCod_marca() != null && !filtrosApp.getCod_marca().isEmpty()) {
+				sql += " AND f.cod_marca = s.cod_marca";
+			}
+			sql += " AND f.cod_reporte = s.cod_reporte)";
+		}
+		sql += " join TBL_MOV_REPORTE_CAB cab";
+		if (filtrosApp != null) {
+			sql += " ON(cab.id_filtros_app = f.id)";
+		}
+		sql += " left outer join TBL_MOV_REP_INCIDENCIA ri on (ri.cod_servicio = s.cod_servicio) and (ri.id_reporte_cab = cab.id) where cab.id ="+idCabecera;
+		
+
+		dbCursor = db.rawQuery(sql, null);
+		dbCursor.moveToFirst();
+		if (dbCursor.getCount() > 0) {
+			elements = new ArrayList<Object>();
+			while (!dbCursor.isAfterLast()) {
+
+				E_ReporteIncidencia mA = new E_ReporteIncidencia();
+				//
+				mA.setCod_servicio(dbCursor.getString(0));
+				mA.setDescripcion(dbCursor.getString(1));
+				mA.setId_foto(dbCursor.getInt(2));
+				mA.setHasPedido(dbCursor.getString(3));
+				mA.setComentario(dbCursor.getString(4));
+				elements.add(mA);
+				dbCursor.moveToNext();
+			}
+			dbCursor.close();
+		}
+		return elements;
+	}
+
+	
+}

@@ -1,0 +1,1765 @@
+package com.org.seratic.lucky;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import android.app.Activity;
+import android.app.ActivityGroup;
+import android.app.AlertDialog;
+import android.app.Dialog;
+
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.text.InputFilter;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.org.seratic.lucky.accessData.SQLiteDatabaseAdapter;
+import com.org.seratic.lucky.accessData.control.E_TblMovReporteCabController;
+import com.org.seratic.lucky.accessData.control.TblMstOpcReporteController;
+import com.org.seratic.lucky.accessData.entities.E_TBL_MOV_REP_PRESENCIA;
+import com.org.seratic.lucky.accessData.entities.E_TblMovReporteCab;
+import com.org.seratic.lucky.accessData.entities.E_TblMstOpcReporte;
+import com.org.seratic.lucky.manager.CustomTextWatcher;
+import com.org.seratic.lucky.manager.DatosManager;
+import com.org.seratic.lucky.manager.TiposReportes;
+
+public class ReporteGeneral extends ActivityGroup {
+	private int idCabeceraGuardada = 1;
+	private IReportes myREporte;
+
+	private boolean filtros;
+	private boolean funcion1;
+
+	private Button btGguardar;
+	private Button btFiltros;
+	private Button btFuncion;
+
+	private int idReporte;
+	private int idSubreporte;
+
+	private SQLiteDatabase db;
+
+	private View filtrosView;
+	private View actualView;
+	private Activity reporteFotografico;
+
+	private ReportesGrillaActivity reporteGrilla;
+	private ReporteRevestimiento reporteRevestimiento;
+	private ReporteElementosVisib reporteElementosVisib;
+	private ReporteIncidenciaConSubreportes reporteIncidencia;
+	private ReporteBloqueAzul reporteBloqueAzul;
+	
+	private String keyReportes = "";
+
+	private int tipoReporte = 0;
+
+	private ProgressDialog dialog = null;
+
+	private static final int ALERT_AGREGAR = 1;
+	private static final int ALERT_GUARDAR = 2;
+	private static final int ALERT_GUARDAR_DATOS_ANTERIORES = 3;
+	private static final int DIALOG_AGREGAR = 4;
+	private static final int ALERT_GUARDAR_VENTANA = 5;
+	private static final int DIALOG_GUARDAR_OBSERVACION = 6;
+	private static final int ALERT_REGISTRAR_OTRA_MARCA_FAMILIA = 7;
+
+	private Dialog crearDialogo;
+	private String alias;
+	private ContenedorReportes contedoreReportes;
+	private LinearLayout ll;
+	private E_TBL_MOV_REP_PRESENCIA elementoVenta;
+	private ComponenteOpcReporteActivity filtrosManager;
+	private ComponenteReportePresenciaActivity ventana;
+	private ReporteITTActivity reporteIttManager;
+	private EditText et2;
+
+	private boolean flujoNormal = false;
+
+	private boolean presBotonGuardar = false;
+
+	private HashMap<String, String> itemsSeleccionados;
+	private boolean hayObservacion = false;
+
+	private ArrayList<String> mIdList;
+
+	public Handler myReportesHandler = new Handler() {
+
+		@Override
+		public void handleMessage(Message msg) {
+
+			switch (msg.arg1) {
+			case 0:
+
+				break;
+			case 1:
+				if (filtros) {
+					Log.i("Reporte General",
+							"Tiene filtros, va a mostrar los filtros");
+					mostrarFiltros();
+				} else {
+					Log.i("Reporte General",
+							"no tiene filtros, a punto de finalizar");
+					if (contedoreReportes != null) {
+						contedoreReportes.finish();
+					}
+				}
+				break;
+
+			case 20:
+				btGguardar.setEnabled(true);
+				break;
+			default:
+				break;
+			}
+		}
+
+	};
+	private SharedPreferences preferencesNavFiltro;
+
+	public void setGuardar(boolean guardar) {
+		if (guardar) {
+			btGguardar.setVisibility(View.VISIBLE);
+		} else {
+			btGguardar.setVisibility(View.GONE);
+		}
+	}
+
+	public void setFiltros(boolean filtros) {
+		this.filtros = filtros;
+		if (filtros) {
+			btFiltros.setVisibility(View.VISIBLE);
+		} else {
+			btFiltros.setVisibility(View.GONE);
+		}
+	}
+
+	public void setFuncion1(boolean funcion, String textoFuncion) {
+		this.funcion1 = funcion;
+		if (funcion1) {
+			btFuncion.setText(textoFuncion);
+			btFuncion.setVisibility(View.VISIBLE);
+		} else {
+			btFuncion.setVisibility(View.GONE);
+		}
+	}
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		Log.i("Reporte General", "Reporte General onCreate()");
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.ly_reporte_general);
+		if (mIdList == null) {
+			mIdList = new ArrayList<String>();
+		}
+		btGguardar = ((Button) findViewById(R.id.guardar));
+		btFiltros = ((Button) findViewById(R.id.filtros));
+		btFuncion = ((Button) findViewById(R.id.funcion1));
+
+		SQLiteDatabaseAdapter aSQLiteDatabaseAdapter = SQLiteDatabaseAdapter.getInstance(this);
+		db = aSQLiteDatabaseAdapter.getWritableDatabase();
+		boolean reinicio = false;
+		if (DatosManager.getInstancia().getUsuario() == null) {
+			DatosManager instanciaDM = (DatosManager) getLastNonConfigurationInstance();
+			if (instanciaDM == null) {
+				Log.i("Reporte General", "Instancia recuperada DatosManager");
+				DatosManager.getInstancia().cargarDatos(db);
+				reinicio = true;
+			} else {
+				DatosManager.setInstancia(instanciaDM);
+			}
+		}
+
+		setFiltros(false);
+		setGuardar(false);
+		setFuncion1(false, null);
+		Bundle extras = getIntent().getExtras();
+
+		if (extras != null) {
+			idReporte = DatosManager.getInstancia().getIdReporte();
+			idSubreporte = extras.getInt("idSubReporte");
+			alias = extras.getString("alias");
+		}
+
+		Log.i("******", "OnCreate" + idReporte + "-" + idSubreporte);
+		Log.i("******", "OnCreate" + idReporte + "-" + idSubreporte);
+		Log.i("******", "OnCreate" + idReporte + "-" + idSubreporte);
+
+		itemsSeleccionados = new HashMap<String, String>();
+
+		// Se fijan los filtros en los reportes
+		TblMstOpcReporteController opcionReporteController = new TblMstOpcReporteController(db);
+
+		E_TblMstOpcReporte opcionReporte = null;
+		if (idSubreporte == 0) {
+			opcionReporte = (E_TblMstOpcReporte) opcionReporteController.getByReporte(idReporte);
+		} else {
+			opcionReporte = (E_TblMstOpcReporte) opcionReporteController.getBySubreporte(idReporte, idSubreporte);
+		}
+		//
+		ll = (LinearLayout) findViewById(R.id.reporteGeneral);
+		filtros = false;
+
+		keyReportes = idReporte + "-" + idSubreporte + "-" + DatosManager.getInstancia().getUsuario().getCod_canal();
+		tipoReporte = TiposReportes.getInstancia(this).getIDSubReportefromMap(keyReportes);
+		Log.i("ReporteGeneral", "keyReporte" + keyReportes);
+
+		// Validad si el reporte tiene filtro
+		if (opcionReporte != null && opcionReporte.isFiltroFijado()) {
+
+			DatosManager.getInstancia().setOpcionReporte(opcionReporte);
+			filtrosManager = new ComponenteOpcReporteActivity(this, idReporte, keyReportes, 0, itemsSeleccionados, false, tipoReporte);
+			filtrosView = filtrosManager.getView();
+			actualView = filtrosView;
+			myREporte = filtrosManager;
+			myREporte.setKey(keyReportes);
+			filtros = true;
+
+		} else {
+			// Caso en el que no hay filtros
+
+			idCabeceraGuardada = DatosManager.getInstancia().crearCabeceraReporte(String.valueOf(idSubreporte), 0, db, E_TblMovReporteCab.ESTADO_TEMPORAL, ReporteGeneral.this);
+			if (reinicio) {
+				Intent reporteGeneral = new Intent(this, ContenedorReportes.class);
+				reporteGeneral.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				reporteGeneral.putExtra("idSubreporte", 0);
+				startActivity(reporteGeneral);
+			} else {
+				if (reporteIsIReporte()) {
+					actualView = getReporte(tipoReporte).getView();
+					actualView.invalidate();
+				}
+			}
+			switch (tipoReporte) {
+			case TiposReportes.TIPO_PROMOCION_COLGATE_DT:
+				verReportePromocion();
+				break;
+			case TiposReportes.TIPO_VISIBILIDAD_COMPETENCIA_DT:
+				verReporteVisibCompentecia();
+				break;
+			case TiposReportes.TIPO_MATERIAL_POP_COLGATE_DT:
+				verReporteMaterialPOP();
+				break;
+			case TiposReportes.TIPO_FOTOGRAFICO:
+				verReporteFotografico();
+				break;
+			case TiposReportes.TIPO_SOD_ALICORP_ID_EXPRIM_EXSEC_MOBS_FOTO:
+				verReporteSOD();
+				break;
+			case TiposReportes.TIPO_LAYOUT_ALICORP:
+				verReporteLayout();
+				break;
+			case TiposReportes.TIPO_COMPETENCIA_ALICORP_MAYOR:
+				verReporteCompetenciaAl_Mayor();
+				break;
+			case TiposReportes.TIPO_COMPETENCIA_ALICORP_AS:
+				verReporteCompetenciaAl_AS();
+				break;
+			case TiposReportes.TIPO_COMPETENCIA_SF_MODERNO_FORM:
+				verReporteCompetenciaSanFdo();
+				break;
+			case TiposReportes.TIPO_EXHIBICION_ALICORP:
+				verReporteExhibicion();
+				break;			
+			case TiposReportes.TIPO_INCIDENCIA_SF_AAVV:
+				verReporteIncidencia();
+				break;
+			/*
+			 * case TiposReportes.TIPO_MARCAJE_PRECIOS_TRADICIONAL_SANFERNANDO:
+			 * verReporteMarcajePrec(); break; case
+			 * TiposReportes.TIPO_CREDITO_COMPETENCIA_TRADICIONAL_SANFERNANDO_LV
+			 * : verReporteCreditComp(); break;
+			 */
+			case TiposReportes.TIPO_ACCIONESMDO_SF_TRADICIONAL_CHIKARA:
+			case TiposReportes.TIPO_ACCIONESMERCADO_SF_AAVV:
+				verReporteAccionesMercado();
+				break;
+			case TiposReportes.TIPO_VIDEO:
+				verReporteVideo();
+				break;
+
+			default:
+				if (reporteIsIReporte()) {
+					actualView = getReporte(tipoReporte).getView();
+					actualView.invalidate();
+				}
+				break;
+			}
+		}
+		if (filtros || reporteIsIReporte()) {
+			ll.removeAllViews();
+			// fija el reporte
+			fijarReporteVisible(actualView);
+
+			btGguardar.setOnClickListener(new View.OnClickListener() {
+
+				public void onClick(View v) {
+					btGguardar.setEnabled(false);
+					guardar();
+					btGguardar.setEnabled(true);
+				}
+			});
+
+			btFiltros.setOnClickListener(new View.OnClickListener() {
+
+				public void onClick(View v) {
+					if (tipoReporte == TiposReportes.TIPO_PRESENCIA_VISIBILIDAD_COLGATE_COD_CANTIDAD_VENTANA) {
+						mostrarMensaje("Cargando");
+						ll.removeAllViews();
+						setFiltros(false);
+						fijarReporteVisible(getReporte(tipoReporte).getView());
+					} else {
+						if (et2 != null) {
+							et2.setText("");
+						}
+						mostrarFiltros();
+					}
+				}
+
+			});
+
+			btFuncion.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View v) {
+					if (tipoReporte == TiposReportes.TIPO_CODIGOS_ITT_COLGATE) {
+						// showDialog(DIALOG_AGREGAR);
+						reporteGrilla.agregarDistribuidora();
+					} else if (tipoReporte == TiposReportes.TIPO_PRESENCIA_VISIBILIDAD_COLGATE_COD_CANTIDAD_VENTANA) {
+						if (ventana == null)
+							ventana = new ComponenteReportePresenciaActivity(ReporteGeneral.this, idCabeceraGuardada,elementoVenta);
+						myREporte = ventana;
+						ll.removeAllViews();
+						fijarReporteVisible(myREporte.getView());
+						setFiltros(true);
+						setFuncion1(false, "");
+
+						// } else if (tipoReporte ==
+						// TiposReportes.TIPO_PRECIOS_AAVV_SANFERNANDO ||
+						// tipoReporte ==
+						// TiposReportes.TIPO_PRECIOS_MODERNO_SANFERNANDO ||
+						// tipoReporte ==
+						// TiposReportes.TIPO_VENTAS_AAVV_SANFERNANDO) {
+					} else if (tipoReporte == TiposReportes.TIPO_PRECIOS_SF_MODERNO) {
+						showDialog(DIALOG_GUARDAR_OBSERVACION);
+					}
+				}
+			});
+
+		}
+		if (filtros) {
+			filtrosManager.setListenerSelecion(this);
+		}
+
+		preferencesNavFiltro = getSharedPreferences("Nav" + keyReportes, MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		int idFiltro = preferencesNavFiltro.getInt("idFiltros", -1);
+		Log.i("ReporteGeneral", "idFiltro recuperado en el preferences: " + idFiltro);
+		if (idFiltro > 0) {
+			seleccion(idFiltro);
+		}
+		SharedPreferences preferencesNavegacion = getSharedPreferences("Navegacion", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		Editor edit = preferencesNavegacion.edit();
+		edit.putString("keyReportes", keyReportes);
+		edit.commit();
+
+	}
+
+	private boolean reporteIsIReporte() {
+		boolean isIReporte = true;
+		switch (tipoReporte) {
+		case TiposReportes.TIPO_PROMOCION_COLGATE_DT:
+		case TiposReportes.TIPO_VISIBILIDAD_COMPETENCIA_DT:
+		case TiposReportes.TIPO_MATERIAL_POP_COLGATE_DT:
+		case TiposReportes.TIPO_FOTOGRAFICO:
+		case TiposReportes.TIPO_SOD_ALICORP_ID_EXPRIM_EXSEC_MOBS_FOTO:
+		case TiposReportes.TIPO_LAYOUT_ALICORP:
+		case TiposReportes.TIPO_COMPETENCIA_ALICORP_MAYOR:
+		case TiposReportes.TIPO_COMPETENCIA_SF_MODERNO_FORM:
+		case TiposReportes.TIPO_EXHIBICION_ALICORP:
+		case TiposReportes.TIPO_INCIDENCIA_SF_AAVV:
+			/*
+			 * case TiposReportes.TIPO_MARCAJE_PRECIOS_TRADICIONAL_SANFERNANDO:
+			 * case
+			 * TiposReportes.TIPO_CREDITO_COMPETENCIA_TRADICIONAL_SANFERNANDO_LV
+			 * :
+			 */
+
+		case TiposReportes.TIPO_ACCIONESMDO_SF_TRADICIONAL_CHIKARA:
+		case TiposReportes.TIPO_ACCIONESMERCADO_SF_AAVV:
+		case TiposReportes.TIPO_VIDEO:
+			isIReporte = false;
+			break;
+		default:
+			isIReporte = true;
+			break;
+		}
+		Log.i("Reporte General", "El reporte es IReporte: " + isIReporte);
+		return isIReporte;
+	}
+
+	public void guardar() {
+		Boolean isReporteCambio = myREporte.isReporteCambio();
+		Log.i("Reporte General", "isReporteCambio " + isReporteCambio);
+		if (isReporteCambio != null) {
+			if (isReporteCambio.booleanValue()) {
+				if (tipoReporte == TiposReportes.TIPO_PRESENCIA_VISIBILIDAD_COLGATE_COD_CANTIDAD_VENTANA && elementoVenta != null && !funcion1) {
+					showDialog(ALERT_GUARDAR_VENTANA);
+				} else {
+					showDialog(ALERT_GUARDAR);
+				}
+			} else {
+				// if (tipoReporte == TiposReportes.TIPO_VENTAS_AAVV_SANFERNANDO
+				// || tipoReporte == TiposReportes.TIPO_PRECIOS_AAVV_SANFERNANDO
+				// || tipoReporte ==
+				// TiposReportes.TIPO_PRECIOS_MODERNO_SANFERNANDO) {
+				if (tipoReporte == TiposReportes.TIPO_PRECIOS_SF_MODERNO) {
+					if (hayObservacion)
+						showDialog(ALERT_GUARDAR);
+					else
+						showDialog(ALERT_GUARDAR_DATOS_ANTERIORES);
+				} else {
+					showDialog(ALERT_GUARDAR_DATOS_ANTERIORES);
+				}
+			}
+		} else {
+			Toast.makeText(this, "No se ha relevado información", Toast.LENGTH_SHORT).show();
+		}
+
+	}
+
+	public void mostrarFiltros() {
+		Editor ed = preferencesNavFiltro.edit();
+		ed.putInt("idFiltros", -1);
+		ed.commit();
+		SharedPreferences preferencesRev = getSharedPreferences("ReporteRevestimiento", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		SharedPreferences preferencesElementosVisib = getSharedPreferences("ReporteElementosVisib", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		SharedPreferences preferencesInc = getSharedPreferences("ReporteIncidenciaConSubrep", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		SharedPreferences preferencesBloqueAzul = getSharedPreferences("ReporteBloqueAzul", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		if (preferencesRev != null) {
+			Editor editorRev = preferencesRev.edit();
+			editorRev.clear();
+			editorRev.commit();
+		}
+		if (preferencesElementosVisib != null) {
+			Editor editorElVisib = preferencesElementosVisib.edit();
+			editorElVisib.clear();
+			editorElVisib.commit();
+		}
+		if (preferencesInc != null) {
+			Editor editorInc = preferencesInc.edit();
+			editorInc.clear();
+			editorInc.commit();
+		}
+		if (preferencesBloqueAzul != null) {
+			Editor editorBloqueAzul = preferencesBloqueAzul.edit();
+			editorBloqueAzul.clear();
+			editorBloqueAzul.commit();
+		}
+		if (filtros) {
+			clearBar();
+			ll.removeAllViews();
+			fijarReporteVisible(filtrosManager.getView());
+			filtrosManager.setListenerSelecion(this);
+		}
+	}
+
+	public void clearBar() {
+		setGuardar(false);
+		setFuncion1(false, "");
+		setFiltros(false);
+	}
+
+	/*
+	 * public void relevar(int idFiltro, int tipoRelevo) { filtros = true;
+	 * setFiltros(true); Log.i("REporteGeneral", "ID Filtro" + idFiltro);
+	 * Log.i("REporteGeneral", "ID SubReporte" + idSubreporte);
+	 * Log.i("REporteGeneral", "ID SubReporte" + db);
+	 * 
+	 * // Creamos la cabecera del reporte idCabeceraGuardada =
+	 * DatosManager.getInstancia
+	 * ().crearCabeceraReporte(String.valueOf(idSubreporte), idFiltro, db,
+	 * E_TblMovReporteCab.ESTADO_TEMPORAL, ReporteGeneral.this);
+	 * Log.i("Cabecera Reporte Creada", "" + idCabeceraGuardada);
+	 * 
+	 * int tipoReporte =
+	 * TiposReportes.getInstancia(this).getIDReportefromMap(keyReportes); switch
+	 * (tipoReporte) { case TiposReportes.REPORTE_FOTOGRAFICO:
+	 * verReporteFotografico(); break; case TiposReportes.REPORTE_SOD:
+	 * verReporteSOD(); break; case TiposReportes.REPORTE_COMPETENCIA_AL:
+	 * verReporteCompetenciaAl(); break; case
+	 * TiposReportes.REPORTE_COMPETENCIA_SF: verReporteCompetenciaSanFdo();
+	 * break; case TiposReportes.REPORTE_EXHIBICIONES_AL:
+	 * verReporteExhibicion(); break; case TiposReportes.REPORTE_LAYOUT_AL:
+	 * verReporteLayout(); break; case TiposReportes.REPORTE_INCIENCIA_SF:
+	 * verReporteIncidencia(); break; case
+	 * TiposReportes.REPORTE_MARCAJE_PREC_SF_TRADICIONAL:
+	 * verReporteMarcajePrec(); break; case
+	 * TiposReportes.REPORTE_CREDITO_COMP_SF_TRADICIONAL:
+	 * verReporteCreditComp(); break;
+	 * 
+	 * default: ll.removeAllViews();
+	 * fijarReporteVisible(getReporte(TiposReportes
+	 * .getInstancia(this).getIDReportefromMap(keyReportes)).getView()); break;
+	 * } }
+	 */
+
+	// Cuando se selecciona un filtro
+	public void seleccion(int idFiltro) {
+		// mostrarMensaje("Cargando Reporte..");
+
+		Editor editorApp = preferencesNavFiltro.edit();
+		editorApp.putInt("idFiltros", idFiltro);
+		editorApp.commit();
+		//
+		filtros = true;
+
+		Log.i("REporteGeneral", "ID Filtro" + idFiltro);
+		Log.i("REporteGeneral", "ID SubReporte" + idSubreporte);
+		Log.i("REporteGeneral", "ID SubReporte" + db);
+
+		// Creamos la cabecera del reporte
+		idCabeceraGuardada = DatosManager.getInstancia().crearCabeceraReporte(String.valueOf(idSubreporte), idFiltro, db, E_TblMovReporteCab.ESTADO_TEMPORAL, ReporteGeneral.this);
+		Log.i("Cabecera Reporte Creada", "" + idCabeceraGuardada);
+
+		SharedPreferences p = getSharedPreferences("ReporteFotoIncidencia",	MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		Editor ed = p.edit();
+		ed.remove("comentario");
+		ed.commit();
+
+		// int tipoReporte =
+		// TiposReportes.getInstancia(this).getIDSubReportefromMap(keyReportes);
+		switch (tipoReporte) {
+		case TiposReportes.TIPO_PROMOCION_COLGATE_DT:
+			verReportePromocion();
+			break;
+		case TiposReportes.TIPO_VISIBILIDAD_COMPETENCIA_DT:
+			verReporteVisibCompentecia();
+			break;
+		case TiposReportes.TIPO_MATERIAL_POP_COLGATE_DT:
+			verReporteMaterialPOP();
+			break;
+		case TiposReportes.TIPO_FOTOGRAFICO:
+			verReporteFotografico();
+			break;
+		case TiposReportes.TIPO_SOD_ALICORP_ID_EXPRIM_EXSEC_MOBS_FOTO:
+			verReporteSOD();
+			break;
+		case TiposReportes.TIPO_LAYOUT_ALICORP:
+			verReporteLayout();
+			break;
+		case TiposReportes.TIPO_COMPETENCIA_ALICORP_MAYOR:
+			verReporteCompetenciaAl_Mayor();
+			break;
+		case TiposReportes.TIPO_COMPETENCIA_ALICORP_AS:
+			verReporteCompetenciaAl_AS();
+			break;
+		case TiposReportes.TIPO_COMPETENCIA_SF_MODERNO_FORM:
+			verReporteCompetenciaSanFdo();
+			break;
+		case TiposReportes.TIPO_EXHIBICION_ALICORP:
+			verReporteExhibicion();
+			break;
+		case TiposReportes.TIPO_INCIDENCIA_SF_AAVV:
+			verReporteIncidencia();
+			break;
+		/*
+		 * case TiposReportes.TIPO_MARCAJE_PRECIOS_TRADICIONAL_SANFERNANDO:
+		 * verReporteMarcajePrec(); break; case
+		 * TiposReportes.TIPO_CREDITO_COMPETENCIA_TRADICIONAL_SANFERNANDO_LV:
+		 * verReporteCreditComp();
+		 */
+		case TiposReportes.TIPO_ACCIONESMDO_SF_TRADICIONAL_CHIKARA:
+		case TiposReportes.TIPO_ACCIONESMERCADO_SF_AAVV:
+			verReporteAccionesMercado();
+			break;
+		case TiposReportes.TIPO_VIDEO:
+			verReporteVideo();
+			break;
+		default:
+			if (reporteIsIReporte()) {
+				ll.removeAllViews();
+				fijarReporteVisible(getReporte(TiposReportes.getInstancia(this).getIDSubReportefromMap(keyReportes)).getView());
+				setFiltros(true);
+			}
+			break;
+		}
+
+	}
+
+	public void fijarReporteVisible(View reporte) {
+		// if (reporteIsIReporte()) {
+
+		myREporte.setKey(keyReportes);
+		myREporte.setHandler(myReportesHandler);
+
+		ll.addView(reporte);
+
+		if (dialog != null)
+			dialog.dismiss();
+		// }
+	}
+
+	public void verReportePromocion() {
+		Intent reportePromocion = new Intent(ReporteGeneral.this, Empresa.class);
+		reportePromocion.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		startActivity(reportePromocion);
+	}
+
+	public void verReporteVisibCompentecia() {
+		Intent reporteCompetencia = new Intent(ReporteGeneral.this, ReportePromocion.class);
+		reporteCompetencia.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		startActivity(reporteCompetencia);
+	}
+
+	public void verReporteMaterialPOP() {
+		Intent reporte = new Intent(ReporteGeneral.this, ReporteFarmaciaMatPOPDt.class);
+		reporte.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		startActivity(reporte);
+	}
+
+	public void verReporteFotografico() {
+		setFiltros(false);
+		Intent irFoto = new Intent(ReporteGeneral.this, ReporteFotografico.class);
+		irFoto.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		irFoto.putExtra("idCabecera", idCabeceraGuardada);
+		startActivity(irFoto);
+	}
+
+	public void verReporteSOD() {
+		// mostrarMensaje(getString(R.string.reportes_general_capturandoFoto));
+		Intent reporte = new Intent(ReporteGeneral.this, ReporteSOD.class);
+		reporte.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		reporte.putExtra("idCabecera", idCabeceraGuardada);
+		startActivity(reporte);
+	}
+
+	public void verReporteLayout() {
+		Intent reporte = new Intent(ReporteGeneral.this, ReporteLayout.class);
+		reporte.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		reporte.putExtra("idCabecera", idCabeceraGuardada);
+		startActivity(reporte);
+	}
+
+	public void verReporteCompetenciaAl_Mayor() {
+		Intent reporte = new Intent(ReporteGeneral.this, ReporteCompetenciaAlicorp_Mayor.class);
+		reporte.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		reporte.putExtra("idCabecera", idCabeceraGuardada);
+		startActivity(reporte);
+	}
+
+	public void verReporteCompetenciaAl_AS() {
+		Intent reporte = new Intent(ReporteGeneral.this, ReporteCompetenciaAlicorp_AS.class);
+		reporte.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		reporte.putExtra("idCabecera", idCabeceraGuardada);
+		startActivity(reporte);
+	}
+
+	public void verReporteCompetenciaSanFdo() {
+		Intent reporte = new Intent(ReporteGeneral.this, ReporteCompetenciaSanFdo.class);
+		reporte.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		reporte.putExtra("idCabecera", idCabeceraGuardada);
+		startActivity(reporte);
+	}
+
+	public void verReporteExhibicion() {
+		Intent reporte = new Intent(ReporteGeneral.this, ReporteExhibicionesAlicorp.class);
+		reporte.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		reporte.putExtra("idCabecera", idCabeceraGuardada);
+		startActivity(reporte);
+	}
+
+	public void verReporteIncidencia() {
+		setFiltros(false);
+		Intent reporte = new Intent(ReporteGeneral.this, ReporteIncidencia.class);
+		reporte.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		reporte.putExtra("idCabecera", idCabeceraGuardada);
+		reporte.putExtra("tipoSubReporte", this.tipoReporte);
+		startActivity(reporte);
+	}
+
+	public void verReporteMarcajePrec() {
+		Log.i("Reporte General", "en verReporteMarcajePrec()");
+		Intent reporte = new Intent(ReporteGeneral.this, ReporteMarcajePrecio.class);
+		reporte.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		reporte.putExtra("idCabecera", idCabeceraGuardada);
+		reporte.putExtra("codReporte", TiposReportes.COD_REP_MARCAJE_PRECIOS);
+		startActivity(reporte);
+	}
+
+	public void verReporteCreditComp() {
+		Intent reporte = new Intent(ReporteGeneral.this, ReporteCreditoCompetencia.class);
+		reporte.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		reporte.putExtra("idCabecera", idCabeceraGuardada);
+		reporte.putExtra("codReporte", TiposReportes.COD_REP_CREDITO_COMPETENCIA);
+		startActivity(reporte);
+	}
+
+	public void verReporteAccionesMercado() {
+		Intent reporte = new Intent(ReporteGeneral.this, ReporteAcciones_Mercado_SanFernando_AAVV.class);
+		reporte.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		reporte.putExtra("idCabecera", idCabeceraGuardada);
+		reporte.putExtra("codReporte", TiposReportes.COD_REP_ACCIONES_MERCADO);
+		reporte.putExtra("tipoReporte", tipoReporte);
+		startActivity(reporte);
+	}
+
+	public void verReporteVideo() {
+		setFiltros(false);
+		Intent reporte = new Intent(ReporteGeneral.this, ReporteVideo.class);
+		reporte.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+		reporte.putExtra("idCabecera", idCabeceraGuardada);
+		startActivity(reporte);
+	}
+
+
+	@Override
+	protected void onResume() {
+		Log.i("ReporteGeneral", "onResume()");
+		super.onResume();
+		if (dialog != null) {
+			dialog.dismiss();
+		}
+		Log.i("ReporteGeneral", "idCabeceraGuardada" + idCabeceraGuardada);
+		Log.i("", "");
+		switch (tipoReporte) {
+
+		case TiposReportes.TIPO_SOD_ALICORP_ID_EXPRIM_EXSEC_MOBS_FOTO:
+			SharedPreferences sp = getSharedPreferences("ReporteSOD", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+			boolean reinicio = sp.getBoolean("reinicio", false);
+
+			if (reinicio) {
+				idCabeceraGuardada = sp.getInt("idCab", 0); 
+				Log.i("ReporteGeneral", "idCabeceraGuardada in reinicio: " + idCabeceraGuardada);
+				int idFoto = sp.getInt("idFoto", 0);
+				String com = sp.getString("comentario", null);
+				Editor edit = sp.edit();
+				edit.putBoolean("reinicio", true);
+				edit.putInt("idFoto", idFoto);
+				edit.putString("comentario", com);
+				edit.commit();
+				verReporteSOD();
+			} else {
+				// Se fijan los filtros en los reportes
+				TblMstOpcReporteController opcionReporteController = new TblMstOpcReporteController( db);
+				E_TblMstOpcReporte opcionReporte = null;
+				if (idSubreporte == 0) {
+					opcionReporte = (E_TblMstOpcReporte) opcionReporteController.getByReporte(idReporte);
+				} else {
+					opcionReporte = (E_TblMstOpcReporte) opcionReporteController.getBySubreporte(idReporte, idSubreporte);
+				}
+				//
+
+				Log.i("ReporteGeneral", "keyReporte: " + keyReportes);
+				// Validad si el reporte tiene filtro
+				if (opcionReporte != null && !opcionReporte.isFiltroFijado()) {
+					finalizarRG();
+				}
+			}
+			break;
+
+		case TiposReportes.TIPO_INCIDENCIA_SF_AAVV:
+			SharedPreferences pi = getSharedPreferences("ReporteIncidencia", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+			boolean reinicioi = pi.getBoolean("reinicio", false);
+			Log.i("ReporteGeneral", "TiposReportes.TIPO_INCIDENCIA reinicio: " + reinicioi);
+			if (reinicioi) {
+				Log.i("ReporteGeneral", "onResume() reinicio Rep Incidencia");
+				
+				SharedPreferences p = getSharedPreferences("ReporteFotoIncidencia", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+				if (p != null) {
+					int id_foto = p.getInt("idFoto", 0);
+					String comentario = p.getString("comentario", null);
+					int index = p.getInt("index", 0);
+					idCabeceraGuardada = p.getInt("idCabecera", 0);
+					Editor editor = pi.edit();
+					editor.putInt("idFoto", id_foto);
+					editor.putString("comentario", comentario);
+					editor.putInt("index", index);
+					editor.putInt("idCabecera", idCabeceraGuardada);
+					editor.putBoolean("reincioFoto", true);
+					editor.commit();
+				}
+				Editor edit = p.edit();
+				edit.putBoolean("reinicio", true);
+				edit.commit();
+				verReporteIncidencia();
+			} else {
+				// Se fijan los filtros en los reportes
+				TblMstOpcReporteController opcionReporteController = new TblMstOpcReporteController(db);
+				E_TblMstOpcReporte opcionReporte = null;
+				if (idSubreporte == 0) {
+					opcionReporte = (E_TblMstOpcReporte) opcionReporteController.getByReporte(idReporte);
+				} else {
+					opcionReporte = (E_TblMstOpcReporte) opcionReporteController.getBySubreporte(idReporte, idSubreporte);
+				}
+				//
+
+				Log.i("ReporteGeneral", "keyReporte: " + keyReportes);
+				// Validad si el reporte tiene filtro
+				if (opcionReporte != null && !opcionReporte.isFiltroFijado()) {
+					clearNavegacion();
+					//finalizarRG();
+				}
+			}
+			break;
+		/*
+		 * case TiposReportes.TIPO_MARCAJE_PRECIOS_TRADICIONAL_SANFERNANDO:
+		 * SharedPreferences pm = getSharedPreferences("ReporteMarcajePrecios",
+		 * MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE); boolean reiniciom =
+		 * pm.getBoolean("reinicio", false);
+		 * 
+		 * Log.i("Reporte General", "onResume() reinicio Rep MarcajePrecios: " +
+		 * reiniciom); if (reiniciom) { idCabeceraGuardada = pm.getInt("idCab",
+		 * 0); Editor edit = pm.edit(); edit.putBoolean("reinicio", true);
+		 * edit.commit(); verReporteMarcajePrec(); } else { // Se fijan los
+		 * filtros en los reportes TblMstOpcReporteController
+		 * opcionReporteController = new TblMstOpcReporteController(db);
+		 * E_TblMstOpcReporte opcionReporte = null; if (idSubreporte == 0) {
+		 * opcionReporte = (E_TblMstOpcReporte)
+		 * opcionReporteController.getByReporte(idReporte); } else {
+		 * opcionReporte = (E_TblMstOpcReporte)
+		 * opcionReporteController.getBySubreporte(idReporte, idSubreporte); }
+		 * //
+		 * 
+		 * Log.i("ReporteGeneral", "keyReporte" + keyReportes); // Validad si el
+		 * reporte tiene filtro if (opcionReporte != null &&
+		 * !opcionReporte.isFiltroFijado()) { SharedPreferences prefReporteGral
+		 * = getSharedPreferences("ReporteGeneral", MODE_WORLD_READABLE |
+		 * MODE_WORLD_WRITEABLE); boolean flujoNormal =
+		 * prefReporteGral.getBoolean("flujo_normal_precios", false); if
+		 * (flujoNormal) { finalizarRG(); Editor editor =
+		 * prefReporteGral.edit(); editor.putBoolean("flujo_normal_precios",
+		 * false); editor.commit(); } } /* idCabeceraGuardada =
+		 * pm.getInt("idCab", 0); Editor edit = pm.edit();
+		 * edit.putBoolean("reinicio", true); edit.commit();
+		 * verReporteMarcajePrec();
+		 * 
+		 * 
+		 * }
+		 * 
+		 * break;
+		 */
+		// case
+		// TiposReportes.TIPO_CREDITO_COMPETENCIA_TRADICIONAL_SANFERNANDO_LV:
+		case TiposReportes.TIPO_ACCIONESMERCADO_SF_AAVV:
+		case TiposReportes.TIPO_ACCIONESMDO_SF_TRADICIONAL_CHIKARA: 
+		{
+			TblMstOpcReporteController opcionReporteController = new TblMstOpcReporteController(db);
+			E_TblMstOpcReporte opcionReporte = null;
+			if (idSubreporte == 0) {
+				opcionReporte = (E_TblMstOpcReporte) opcionReporteController.getByReporte(idReporte);
+			} else {
+				opcionReporte = (E_TblMstOpcReporte) opcionReporteController.getBySubreporte(idReporte, idSubreporte);
+			}
+			//
+
+			Log.i("ReporteGeneral", "keyReporte" + keyReportes);
+			// Validad si el reporte tiene filtro
+			if (opcionReporte != null && !opcionReporte.isFiltroFijado()) {
+				finalizarRG();
+			}
+		}
+			break;
+		case TiposReportes.TIPO_FOTOGRAFICO: {
+			TblMstOpcReporteController opcionReporteController = new TblMstOpcReporteController(db);
+			E_TblMstOpcReporte opcionReporte = null;
+			if (idSubreporte == 0) {
+				opcionReporte = (E_TblMstOpcReporte) opcionReporteController.getByReporte(idReporte);
+			} else {
+				opcionReporte = (E_TblMstOpcReporte) opcionReporteController.getBySubreporte(idReporte, idSubreporte);
+			}
+			//
+
+			Log.i("ReporteGeneral", "keyReporte" + keyReportes);
+			// Validad si el reporte tiene filtro
+			if (opcionReporte != null && !opcionReporte.isFiltroFijado()) {
+				finalizarRG();
+			}
+		}
+			break;
+		case TiposReportes.TIPO_VIDEO: {
+			TblMstOpcReporteController opcionReporteController = new TblMstOpcReporteController(db);
+			E_TblMstOpcReporte opcionReporte = null;
+			if (idSubreporte == 0) {
+				opcionReporte = (E_TblMstOpcReporte) opcionReporteController.getByReporte(idReporte);
+			} else {
+				opcionReporte = (E_TblMstOpcReporte) opcionReporteController.getBySubreporte(idReporte, idSubreporte);
+			}
+			//
+			Log.i("ReporteGeneral", "keyReporte" + keyReportes);
+			// Validad si el reporte tiene filtro
+			if (opcionReporte != null && !opcionReporte.isFiltroFijado()) {
+				finalizarRG();
+			}
+		}
+			break;
+		}
+	}
+
+	@Override
+	protected void onStart() {
+		Log.i("ReporteGeneral", "onStart()");
+		super.onStart();
+	}
+
+	@Override
+	protected void finalize() throws Throwable {
+		// TODO Auto-generated method stub
+		super.finalize();
+		filtrosView = null;
+	}
+
+	public void finalizarRG() {
+		filtrosView = null;
+		Log.i("ReporteGeneral", "finalizando reporte general");
+		clearNavegacion();
+		finish();
+	}
+
+	public IReportes getReporte(int key) {
+
+		IReportes intent = null;
+		switch (key) {
+
+		case TiposReportes.TIPO_PRESENCIA_COMENTARIO_COLGATE:
+			reporteGrilla = null;
+			intent = new ReporteComentario(this, idCabeceraGuardada);
+			setGuardar(true);
+			break;
+
+		case TiposReportes.TIPO_PRESENCIA_CLUSTER_PREGUNTA_MARQUE_CANTIDAD:
+		case TiposReportes.TIPO_PRESENCIA_COLGATE_SKU_FRENTE_PROFUNDIDAD:
+		case TiposReportes.TIPO_PRESENCIA_COLGATE_SUPERVISOR_SKUPRECIO:
+		case TiposReportes.TIPO_PRESENCIA_COMPETENCIA_SUPERVISOR_SKUPRECIO:
+		case TiposReportes.TIPO_PRESENCIA_COMPETENCIA_GESTOR_SKUPRESENCIA:
+		case TiposReportes.TIPO_PRESENCIA_COLGATE_GESTOR_SKUPRESENCIA:
+		case TiposReportes.TIPO_PRESENCIA_COMPETENCIA_GESTOR_SKU_PRESENCIA_STOCK:
+		case TiposReportes.TIPO_PRESENCIA_COLGATE_GESTOR_SKU_PRESENCIA_STOCK:
+		case TiposReportes.TIPO_PRESENCIA_OBSERVACIONES_COLGATE:
+		case TiposReportes.TIPO_PRESENCIA_STOCK_COLGATE_SKU_STOCK:
+		case TiposReportes.TIPO_PRESENCIA_STOCK_COMPETENCIA_SKU_STOCK:
+		case TiposReportes.TIPO_PRESENCIA_VISIBILIDAD_COLGATE_COD_CANTIDAD:
+		case TiposReportes.TIPO_PRESENCIA_VISIBILIDAD_COLGATE_COD_CUENTA_CUMPLE:
+		case TiposReportes.TIPO_PRESENCIA_VISIBILIDAD_COMPETENCIA_COD_PRECIO:
+		case TiposReportes.TIPO_PRESENCIA_VISIB_COMPETENCIA_COD_CANTIDAD:
+		case TiposReportes.TIPO_PRESENCIA_VISIB_COMPETENCIA_COD_CUENTA:
+		case TiposReportes.TIPO_POTENCIAL_POTENCIAL_SF_AAVV:
+		case TiposReportes.TIPO_POTENCIAL_REVESTIMIENTO_SF_AAVV:
+		case TiposReportes.TIPO_PRECIOPVP_SF_AAVV:
+		case TiposReportes.TIPO_PRECIOPDV_OBS_SF_AAVV:
+		case TiposReportes.TIPO_PRECIOPDV_PDV_SF_AAVV:
+		case TiposReportes.TIPO_AUDITORIA_REJBLANCA_SF_AAVV:
+		case TiposReportes.TIPO_AUDITORIA_PLASTAZUL_SF_AAVV:
+		case TiposReportes.TIPO_ENCUESTAS_SF_TRADICIONAL_CHIKARA:	
+			reporteGrilla = new ReportesGrillaActivity(this, idCabeceraGuardada, this.tipoReporte);
+			reporteGrilla.setKey(keyReportes);
+			intent = reporteGrilla;
+			setGuardar(true);
+			break;
+
+		case TiposReportes.TIPO_PRESENCIA_VISIBILIDAD_COLGATE_COD_CANTIDAD_VENTANA:
+			if (reporteGrilla == null)
+				reporteGrilla = new ReportesGrillaActivity(this, idCabeceraGuardada, this.tipoReporte);
+			reporteGrilla.setKey(keyReportes);
+			intent = reporteGrilla;
+			elementoVenta = reporteGrilla.hayElementoVentana();
+			if (elementoVenta != null) {
+				setFuncion1(true, "Ventana");
+			}
+			setGuardar(true);
+			break;
+
+		case TiposReportes.TIPO_CODIGOS_ITT_COLGATE:
+			reporteGrilla = new ReportesGrillaActivity(this, idCabeceraGuardada, this.tipoReporte);
+			reporteGrilla.setKey(keyReportes);
+			intent = reporteGrilla;
+			setGuardar(true);
+			setFuncion1(true, "Agregar");
+			break;
+		// reporteGrilla = null;
+		// reporteIttManager = new ReporteITTActivity(this);
+		// intent = reporteIttManager;
+		// reporteIttManager.setHandler(myReportesHandler);
+		// setGuardar(true);
+		// setFuncion1(true, "Agregar");
+		// break;
+
+		case TiposReportes.TIPO_PRECIOS_ALICORP_SKU_PMAYORISTA_PREVENTA_POFERTA_MOBS:
+		case TiposReportes.TIPO_PRECIOS_ALICORP_SKU_PPDV_POFERTA_MOBS:
+
+			reporteGrilla = new ReportesGrillaActivity(this, idCabeceraGuardada, this.tipoReporte);
+			reporteGrilla.setKey(keyReportes);
+			intent = reporteGrilla;
+			setGuardar(true);
+			setFiltros(false);
+			filtros = false;
+			break;
+
+		case TiposReportes.TIPO_PRECIOS_SF_MODERNO:
+			// case TiposReportes.TIPO_PRECIOS_AAVV_SANFERNANDO:
+
+			reporteGrilla = new ReportesGrillaActivity(this, idCabeceraGuardada, this.tipoReporte);
+			reporteGrilla.setKey(keyReportes);
+			intent = reporteGrilla;
+			setGuardar(true);
+			setFuncion1(true, "Observación");
+			setFiltros(false);
+			filtros = false;
+			break;
+
+		case TiposReportes.TIPO_QUIEBRES_ALICORP_SKU_MOBS:
+		case TiposReportes.TIPO_STOCK_ALICORP_COD_STOCK_MOBS:
+		case TiposReportes.TIPO_INGRESOS_SF_MODERNO:
+		case TiposReportes.TIPO_IMPULSO_SF_MODERNO:
+			/*
+			 * case TiposReportes.TIPO_PRECIOS_TRADICIONAL_SANFERNANDO: case
+			 * TiposReportes.TIPO_PRESENCIA_TRADICIONAL_SANFERNANDO: case
+			 * TiposReportes.TIPO_EXHIBICION_TRADICIONAL_SANFERNANDO: case
+			 * TiposReportes.TIPO_ASESORAMIENTO_PROD_TRADICIONAL_SANFERNANDO:
+			 * case
+			 * TiposReportes.TIPO_ENTREGA_MATERIALES_TRADICIONAL_SANFERNANDO:
+			 * case
+			 * TiposReportes.TIPO_INCIDENCIAS_INCID_TRADICIONAL_SANFERNANDO:
+			 * case
+			 * TiposReportes.TIPO_INCIDENCIAS_STATUS_TRADICIONAL_SANFERNANDO:
+			 */
+		case TiposReportes.TIPO_PRECIOS_SF_TRADICIONAL_CHIKARA:
+		case TiposReportes.TIPO_PRESENCIA_PRODUCTOS_SF_TRADICIONAL_CHIKARA:
+			reporteGrilla = new ReportesGrillaActivity(this, idCabeceraGuardada, this.tipoReporte);
+			reporteGrilla.setKey(keyReportes);
+			intent = reporteGrilla;
+			setGuardar(true);
+			setFiltros(false);
+			filtros = false;
+			break;
+
+		/*
+		 * case TiposReportes.TIPO_VENTAS_AAVV_SANFERNANDO: reporteGrilla = new
+		 * ReportesGrillaActivity(this, idCabeceraGuardada, this.tipoReporte);
+		 * reporteGrilla.setKey(keyReportes); intent = reporteGrilla;
+		 * setGuardar(true); setFuncion1(true, "Comentario"); setFiltros(false);
+		 * filtros = false; break;
+		 */
+		case TiposReportes.TIPO_NO_IMPLEMENTADO:
+			reporteGrilla = null;
+			intent = new ReporteNoImplActivity(this);
+			setGuardar(false);
+			setFiltros(false);
+			setFuncion1(false, null);
+			break;
+
+		case TiposReportes.TIPO_REVESTIMIENTO_TIPOREVEST_SF_AAVV:
+		case TiposReportes.TIPO_REVESTIMIENTO_PRESMAT_SF_AAVV:
+			reporteRevestimiento = new ReporteRevestimiento(this, idCabeceraGuardada, this.tipoReporte);
+			reporteRevestimiento.setKey(keyReportes);
+			intent = reporteRevestimiento;
+			setGuardar(true);
+			break;
+		case TiposReportes.TIPO_ESTRELLA_SF_AAVV:
+			reporteGrilla = new ReportesGrillaActivity(this, idCabeceraGuardada, this.tipoReporte);
+			reporteGrilla.setKey(keyReportes);
+			intent = reporteGrilla;
+			setGuardar(false);
+			setFiltros(false);
+			filtros = false;
+			break;
+		case TiposReportes.TIPO_ELEMENTOS_VISIB_SANFERNANDO_TRADICIONAL_CHIKARA:		
+			reporteElementosVisib = new ReporteElementosVisib(this, idCabeceraGuardada, this.tipoReporte);
+			reporteElementosVisib.setKey(keyReportes);
+			intent = reporteElementosVisib;
+			setGuardar(true);
+			break;
+		case TiposReportes.TIPO_INCIDENCIA_PRODUCTOS_SF_TRADICIONAL_CHIKARA:		
+		case TiposReportes.TIPO_INCIDENCIA_SERVICIOS_SF_TRADICIONAL_CHIKARA:		
+			reporteIncidencia = new ReporteIncidenciaConSubreportes(this, idCabeceraGuardada, this.tipoReporte);
+			reporteIncidencia.setKey(keyReportes);
+			intent = reporteIncidencia;
+			setGuardar(true);
+			break;
+		case TiposReportes.TIPO_BLOQUEAZUL_BLOQUE_SF_TRADICIONAL_CHIKARA:
+		case TiposReportes.TIPO_BLOQUEAZUL_FRENTE_SF_TRADICIONAL_CHIKARA:
+			reporteBloqueAzul = new ReporteBloqueAzul(this, idCabeceraGuardada, this.tipoReporte);
+			reporteBloqueAzul.setKey(keyReportes);
+			intent = reporteBloqueAzul;
+			setGuardar(true);
+			break;
+		default:
+			reporteGrilla = null;
+			intent = new ReporteNoImplActivity(this);
+			setGuardar(false);
+			setFiltros(false);
+			break;
+		}
+		tipoReporte = key;
+		myREporte = intent;
+		return intent;
+	}
+
+	public void mostrarMensaje(String msg) {
+		dialog = ProgressDialog.show(ReporteGeneral.this, "", msg, true);
+	}
+
+	public void quitarFoto() {
+		reporteFotografico.finish();
+	}
+
+	@Override
+	protected void onPrepareDialog(int id, Dialog dialog) {
+		// TODO Auto-generated method stub
+		super.onPrepareDialog(id, dialog);
+		switch (id) {
+		case ALERT_AGREGAR:
+
+			((AlertDialog) dialog).setMessage(getString(R.string.reportes_itt_agregar_alert) + " " + et2.getText());
+			break;
+		case DIALOG_AGREGAR:
+			final EditText et = (EditText) dialog.findViewById(R.id.etNombre);
+			et.setText("");
+			break;
+		case DIALOG_GUARDAR_OBSERVACION:
+			E_TblMovReporteCabController reporteCabController = new E_TblMovReporteCabController(db);
+			final E_TblMovReporteCab cab = reporteCabController.getByIdCabecera(idCabeceraGuardada);
+			et2 = (EditText) dialog.findViewById(R.id.etObservacion);
+			et2.setText(cab.getComentario().toString());
+			break;
+
+		}
+	}
+
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		// TODO Auto-generated method stub
+		Dialog dialog = null;
+		E_TblMovReporteCabController reporteCabController = new E_TblMovReporteCabController(
+				db);
+		switch (id) {
+		case DIALOG_AGREGAR:
+			crearDialogo = null;
+			crearDialogo = new Dialog(this);
+			crearDialogo.setContentView(R.layout.ly_reportes_itt_dialog);
+			crearDialogo.setTitle(R.string.reportes_itt_agregar_title);
+
+			Button ag = (Button) crearDialogo.findViewById(R.id.btnAgregar);
+			et2 = (EditText) crearDialogo.findViewById(R.id.etNombre);
+			if (et2 != null) {
+				et2.setText("");
+			}
+			ag.setOnClickListener(new OnClickListener() {
+
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+
+					et2.setFilters(new InputFilter[] { new CustomTextWatcher(et2) });
+
+					if (et2.getText().toString().trim().equals("")) {
+						Toast.makeText(getApplicationContext(),"Por favor, ingrese un nombre",Toast.LENGTH_LONG).show();
+					} else {
+						showDialog(ALERT_AGREGAR);
+					}
+				}
+			});
+
+			dialog = crearDialogo;
+			break;
+
+		case ALERT_AGREGAR:
+			et2 = (EditText) crearDialogo.findViewById(R.id.etNombre);
+
+			AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+			builder.setMessage(
+					getString(R.string.reportes_itt_agregar_alert) + "  " + et2.getText())
+					.setCancelable(true)
+					.setNegativeButton(R.string.textNo,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int id) {
+									dialog.dismiss();
+								}
+							})
+					.setPositiveButton(R.string.textSi,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int id) {
+
+									et2.setFilters(new InputFilter[] { new CustomTextWatcher(et2) });
+
+									String msg = reporteIttManager.agregarDistribuidora(et2.getText().toString());
+									if (et2 != null) {
+										et2.setText("");
+									}
+									dialog.dismiss();
+									crearDialogo.dismiss();
+									Toast.makeText(ReporteGeneral.this, msg, Toast.LENGTH_SHORT).show();
+								}
+							});
+			dialog = builder.create();
+
+			break;
+
+		case ALERT_GUARDAR:
+
+			builder = new AlertDialog.Builder(this);
+			String textoGuardar = getString(R.string.reportes_itt_guardar_alert) + "  " + alias + " ?";
+
+			builder.setMessage(textoGuardar)
+					.setCancelable(true)
+					.setNegativeButton(R.string.textNo,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int id) {
+									presBotonGuardar = false;
+									if (myREporte != null) {
+										myREporte.setReporteCambio(false);
+									}
+									dialog.dismiss();
+								}
+							})
+					.setPositiveButton(R.string.textSi,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int id) {
+									if (myREporte != null) {
+										Log.i("ReporteGeneral", "GuardandoCabecera con ID" + idCabeceraGuardada);
+										if (hayObservacion) {
+											DatosManager.getInstancia().actualizarCabecera(idCabeceraGuardada,db,et2.getText().toString());
+										}
+										String msg = myREporte.guardar(idCabeceraGuardada);
+										if (msg.equalsIgnoreCase("")) {
+											DatosManager.getInstancia().actualizarCabecera(idCabeceraGuardada,db);
+											DatosManager.getInstancia().setGuardoReporte(true);
+											String resultadoGuardar = "Reporte Guardado Exitosamente";
+											Toast.makeText(ReporteGeneral.this,resultadoGuardar,Toast.LENGTH_SHORT).show();
+											presBotonGuardar = true;
+										} else {
+											Toast.makeText(ReporteGeneral.this,msg, Toast.LENGTH_SHORT).show();
+										}
+									}
+								}
+							});
+			dialog = builder.create();
+
+			break;
+
+		case ALERT_GUARDAR_VENTANA:
+
+			builder = new AlertDialog.Builder(this);
+
+			textoGuardar = "Esta seguro de guardar la ventana?";
+
+			builder.setMessage(textoGuardar)
+					.setCancelable(true)
+					.setNegativeButton(R.string.textNo,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,int id) {
+									presBotonGuardar = false;
+									if (myREporte != null) {
+										myREporte.setReporteCambio(false);
+									}
+									dialog.dismiss();
+								}
+							})
+					.setPositiveButton(R.string.textSi,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,int id) {
+									if (myREporte != null) {
+										Log.i("ReporteGeneral","GuardandoCabecera con ID"+ idCabeceraGuardada);
+										String msg = myREporte.guardar(idCabeceraGuardada);
+										if (msg.equalsIgnoreCase("")) {
+											DatosManager.getInstancia().actualizarCabecera(idCabeceraGuardada,db);
+											DatosManager.getInstancia().setGuardoReporte(true);
+
+											String resultadoGuardar = "Ventana Guardada";
+
+											Toast.makeText(ReporteGeneral.this,resultadoGuardar,Toast.LENGTH_SHORT).show();
+											presBotonGuardar = true;
+										} else {
+											Toast.makeText(ReporteGeneral.this,msg, Toast.LENGTH_SHORT).show();
+										}
+									}
+								}
+							});
+			dialog = builder.create();
+
+			break;
+
+		case ALERT_GUARDAR_DATOS_ANTERIORES:
+
+			builder = new AlertDialog.Builder(this);
+
+			builder.setMessage(
+					getString(R.string.reportes_itt_guardar_alert) + "  "+ alias + ", sin realizar modificaciones?")
+					.setCancelable(true)
+					.setNegativeButton(R.string.textNo,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int id) {
+									if (myREporte != null) {
+										myREporte.setReporteCambio(false);
+									}
+									dialog.dismiss();
+								}
+							})
+					.setPositiveButton(R.string.textSi,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,int id) {
+									if (myREporte != null) {
+										Log.i("ReporteGeneral","GuardandoCabecera con ID"+ idCabeceraGuardada);
+										if (hayObservacion) {
+											DatosManager.getInstancia().actualizarCabecera(idCabeceraGuardada,db,et2.getText().toString());
+										}
+										String msg = myREporte
+												.guardar(idCabeceraGuardada);
+										if (msg.equalsIgnoreCase("")) {DatosManager.getInstancia().actualizarCabecera(idCabeceraGuardada,db);
+											DatosManager.getInstancia().setGuardoReporte(true);
+											String resultadoGuardar = "Reporte Guardado Exitosamente";
+
+											Toast.makeText(ReporteGeneral.this,resultadoGuardar,Toast.LENGTH_SHORT).show();
+											presBotonGuardar = true;
+										} else {
+											Toast.makeText(ReporteGeneral.this,msg, Toast.LENGTH_SHORT).show();
+										}
+									}
+								}
+							});
+			dialog = builder.create();
+
+			break;
+
+		case DIALOG_GUARDAR_OBSERVACION:
+
+			final E_TblMovReporteCab cab = reporteCabController.getByIdCabecera(idCabeceraGuardada);
+
+			crearDialogo = null;
+			crearDialogo = new Dialog(this);
+			crearDialogo.setContentView(R.layout.ly_reporte_precio_observacion_dialog);
+
+			// if (tipoReporte == TiposReportes.TIPO_PRECIOS_AAVV_SANFERNANDO ||
+			// tipoReporte == TiposReportes.TIPO_PRECIOS_MODERNO_SANFERNANDO) {
+			if (tipoReporte == TiposReportes.TIPO_PRECIOS_SF_MODERNO) {
+				crearDialogo.setTitle(R.string.reportes_precio_agregar_observacion);
+				/*
+				 * } else if (tipoReporte ==
+				 * TiposReportes.TIPO_VENTAS_AAVV_SANFERNANDO) {
+				 * crearDialogo.setTitle
+				 * (R.string.reportes_ventas_agregar_comentario);
+				 */
+			}
+
+			TextView tx = (TextView) crearDialogo.findViewById(R.id.textViewObs);
+
+			// if (tipoReporte == TiposReportes.TIPO_PRECIOS_AAVV_SANFERNANDO ||
+			// tipoReporte == TiposReportes.TIPO_PRECIOS_MODERNO_SANFERNANDO) {
+			if (tipoReporte == TiposReportes.TIPO_PRECIOS_SF_MODERNO) {
+				tx.setText(R.string.reportes_precio_observacion);
+				/*
+				 * } else if (tipoReporte ==
+				 * TiposReportes.TIPO_VENTAS_AAVV_SANFERNANDO) {
+				 * tx.setText(R.string.reportes_ventas_comentario);
+				 */
+			}
+
+			Button agr = (Button) crearDialogo.findViewById(R.id.btnAgregarObs);
+			final EditText et2 = (EditText) crearDialogo.findViewById(R.id.etObservacion);
+
+			// et2.setText(cab.getComentario().toString());
+			et2.setFilters(new InputFilter[] { new CustomTextWatcher(et2) });
+			agr.setOnClickListener(new OnClickListener() {
+
+				public void onClick(View v) {
+					// TODO Auto-generated method stub
+
+					if (et2.getText().toString().trim().equals("")
+							&& cab.getComentario() != null
+							&& cab.getComentario().toString().isEmpty()) {
+						// if (tipoReporte ==
+						// TiposReportes.TIPO_PRECIOS_AAVV_SANFERNANDO ||
+						// tipoReporte ==
+						// TiposReportes.TIPO_PRECIOS_MODERNO_SANFERNANDO) {
+						if (tipoReporte == TiposReportes.TIPO_PRECIOS_SF_MODERNO) {
+							Toast.makeText(getApplicationContext(),"Por favor, ingrese una observación",Toast.LENGTH_LONG).show();
+							/*
+							 * } else if (tipoReporte ==
+							 * TiposReportes.TIPO_VENTAS_AAVV_SANFERNANDO) {
+							 * Toast.makeText(getApplicationContext(),
+							 * "Por favor, ingrese un comentario",
+							 * Toast.LENGTH_LONG).show();
+							 */
+						}
+					} else {
+						if (!et2.getText().toString().trim().equalsIgnoreCase(cab.getComentario().toString())) {
+							hayObservacion = true;
+						}
+						crearDialogo.dismiss();
+					}
+
+				}
+
+			});
+
+			dialog = crearDialogo;
+			break;
+
+		case ALERT_REGISTRAR_OTRA_MARCA_FAMILIA:
+
+			builder = new AlertDialog.Builder(this);
+
+			// if ((tipoReporte == TiposReportes.TIPO_PRECIOS_AAVV_SANFERNANDO
+			// || tipoReporte == TiposReportes.TIPO_PRECIOS_MODERNO_SANFERNANDO)
+			// || tipoReporte == TiposReportes.TIPO_QUIEBRES_ALICORP_SKU_MOBS ||
+			// tipoReporte == TiposReportes.TIPO_VENTAS_AAVV_SANFERNANDO) {
+			if (tipoReporte == TiposReportes.TIPO_PRECIOS_SF_MODERNO || tipoReporte == TiposReportes.TIPO_QUIEBRES_ALICORP_SKU_MOBS) {
+				builder.setMessage(getString(R.string.registrar_otra_marca));
+			}
+
+			if (tipoReporte == TiposReportes.TIPO_INGRESOS_SF_MODERNO || tipoReporte == TiposReportes.TIPO_IMPULSO_SF_MODERNO) {
+				builder.setMessage(getString(R.string.registrar_otra_familia));
+			}
+
+			builder.setCancelable(true)
+					.setNegativeButton(R.string.textNo,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,int id) {
+									Intent nombre = new Intent(ReporteGeneral.this,ListaDeReporte.class);
+									nombre.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+									startActivity(nombre);
+								}
+							})
+					.setPositiveButton(R.string.textSi,
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,int id) {
+									finalizarRG();
+								}
+							});
+			dialog = builder.create();
+
+			break;
+		}
+		return dialog;
+	}
+
+	public Handler getMyReportesHandler() {
+		return myReportesHandler;
+	}
+
+	public void setContedorReporte(ContenedorReportes contenedorReportes) {
+		this.contedoreReportes = contenedorReportes;
+
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+
+		// if (TiposReportes.getInstancia().getIDReportefromMap(keyReportes) ==
+		// TiposReportes.REPORTE_EXHIBICION_TRADICIONAL_SF) {
+		// Boolean isReporteCambio = myREporte.isReporteCambio();
+		// if(isReporteCambio==null){
+		// MenuInflater inflater = getMenuInflater();
+		// inflater.inflate(R.menu.menu_motivos_no_exhibicion, menu);
+		// }
+		// }else if
+		// (TiposReportes.getInstancia().getIDReportefromMap(keyReportes) ==
+		// TiposReportes.REPORTE_ASESORAMIENTO_PRODUCTOS) {
+		// Boolean isReporteCambio = myREporte.isReporteCambio();
+		// if(isReporteCambio==null){
+		// MenuInflater inflater = getMenuInflater();
+		// inflater.inflate(R.menu.menu_motivos_no_asesoramiento, menu);
+		// }
+		// }
+		return true;
+	}
+
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		menu.clear();
+		/*
+		 * if (tipoReporte ==
+		 * TiposReportes.TIPO_EXHIBICION_TRADICIONAL_SANFERNANDO) { Boolean
+		 * isReporteCambio = myREporte.isReporteCambio(); if (myREporte != null)
+		 * { myREporte.setReporteCambio(false); } if (isReporteCambio == null) {
+		 * MenuInflater inflater = getMenuInflater();
+		 * inflater.inflate(R.menu.menu_motivos_no_exhibicion, menu); } } else
+		 * if (tipoReporte ==
+		 * TiposReportes.TIPO_ASESORAMIENTO_PROD_TRADICIONAL_SANFERNANDO) {
+		 * Boolean isReporteCambio = myREporte.isReporteCambio(); if (myREporte
+		 * != null) { myREporte.setReporteCambio(false); } if (isReporteCambio
+		 * == null) { MenuInflater inflater = getMenuInflater();
+		 * inflater.inflate(R.menu.menu_motivos_no_asesoramiento, menu); }
+		 * 
+		 * }
+		 */
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		// *****CASO VISITA***********
+		case R.id.motnoexhibicion:
+			Intent nombre = new Intent(ReporteGeneral.this, MotivosActivity.class);
+			nombre.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			nombre.putExtra("codReporte", TiposReportes.COD_REP_EXHIBICION);
+			nombre.putExtra("idCabecera", idCabeceraGuardada);
+			startActivity(nombre);
+			return true;
+
+		case R.id.motnoasesoramiento:
+			Intent nombre1 = new Intent(ReporteGeneral.this, MotivosActivity.class);
+			nombre1.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			nombre1.putExtra("codReporte", TiposReportes.COD_REP_ASESORAMIENTO_PRODUCTOS);
+			nombre1.putExtra("idCabecera", idCabeceraGuardada);
+			startActivity(nombre1);
+			return true;
+
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
+	@Override
+	public void onBackPressed() {
+		if (reporteIsIReporte()) {
+			if (myREporte != null) {
+				Boolean isReporteCambio = myREporte.isReporteCambio();
+				if (isReporteCambio != null) {
+					if (isReporteCambio.booleanValue()) {
+						// System.out.println("isReporteCambio() true");
+						// hay un cambio en la informacion
+						if (!presBotonGuardar) {
+							// Hay cambios y no se ha guardado
+							// System.out.println("Hay cambios y no se ha guardado");
+							if (myREporte != null) {
+
+								AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+								alertDialog.setTitle("Retornar");
+								alertDialog.setMessage("¿Desea retornar sin guardar los datos registrados?");
+								alertDialog.setButton("Si",
+										new DialogInterface.OnClickListener() {
+											public void onClick(DialogInterface dialog, int which) {
+												if (myREporte != null) {
+													myREporte.setReporteCambio(false);
+												}
+												// DatosManager.getInstancia().setAccionListaDeReportes("SemanaPasada");
+												Intent nombre = new Intent(ReporteGeneral.this,ListaDeReporte.class);
+												nombre.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+												startActivity(nombre);
+												clearNavegacion();
+											}
+										});
+								alertDialog.setButton2("No",
+										new DialogInterface.OnClickListener() {
+											public void onClick(DialogInterface dialog,int which) {
+												if (myREporte != null) {
+													myREporte.setReporteCambio(false);
+												}
+											}
+										});
+								if (et2 != null) {
+									et2.setText("");
+								}
+								alertDialog.show();
+							}
+						} else {
+							// Hay cambios y se guardo
+							// System.out.println("Hay cambios y se guardo");
+							// DatosManager.getInstancia().setAccionListaDeReportes("EnviarBD");
+							if (et2 != null) {
+								et2.setText("");
+							}
+							clearNavegacion();
+							Intent nombre = new Intent(ReporteGeneral.this,ListaDeReporte.class);
+							nombre.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+							startActivity(nombre);
+						}
+					} else {
+						// no hay cambios
+						// System.out.println("No hay cambios");
+						if (isPresencia()
+								|| tipoReporte == TiposReportes.TIPO_PRESENCIA_VISIBILIDAD_COLGATE_COD_CANTIDAD_VENTANA) {
+							if (!presBotonGuardar) {
+								AlertDialog alertDialog = new AlertDialog.Builder(
+										this).create();
+								alertDialog.setTitle("Retornar");
+								alertDialog
+										.setMessage("¿Desea dejar la visita sin guardar los datos actuales del reporte?");
+								alertDialog.setButton("Si",
+										new DialogInterface.OnClickListener() {
+											public void onClick(DialogInterface dialog,int which) {
+												if (myREporte != null) {
+													myREporte.setReporteCambio(false);
+												}
+												// DatosManager.getInstancia().setAccionListaDeReportes("SemanaPasada");
+												clearNavegacion();
+												Intent nombre = new Intent(ReporteGeneral.this,ListaDeReporte.class);
+												nombre.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+												startActivity(nombre);
+											}
+										});
+								alertDialog.setButton2("No",
+										new DialogInterface.OnClickListener() {
+											public void onClick(DialogInterface dialog,int which) {
+												if (myREporte != null) {
+													myREporte.setReporteCambio(false);
+												}
+											}
+										});
+								if (et2 != null) {
+									et2.setText("");
+								}
+								alertDialog.show();
+							} else {
+								if (myREporte != null) {
+									myREporte.setReporteCambio(false);
+								}
+								// DatosManager.getInstancia().setAccionListaDeReportes("SemanaPasada");
+								if (et2 != null) {
+									et2.setText("");
+								}
+								clearNavegacion();
+								Intent nombre = new Intent(ReporteGeneral.this,ListaDeReporte.class);
+								nombre.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+								startActivity(nombre);
+							}
+						} else {
+							finalizarRG();
+						}
+					}
+				} else {
+					// Datos vacios
+					// System.out.println("Datos vacios");
+					// DatosManager.getInstancia().setAccionListaDeReportes("NoVisita");
+					if (et2 != null) {
+						et2.setText("");
+					}
+					clearNavegacion();
+					Intent nombre = new Intent(ReporteGeneral.this,ListaDeReporte.class);
+					nombre.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+					startActivity(nombre);
+				}
+			}
+		} else {
+			if (et2 != null) {
+				et2.setText("");
+			}
+			clearNavegacion();
+			finalizarRG();
+		}
+
+	}
+
+	public void clearNavegacion() {
+		Log.i("ReporteGeneral", "Clareando navegacion");
+		SharedPreferences preferencesApp = getSharedPreferences("Navegacion",MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		Editor edit = preferencesApp.edit();
+		edit.clear();
+		edit.commit();
+		SharedPreferences prefNav = getSharedPreferences("Nav" + keyReportes,MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		Editor editor = prefNav.edit();
+		editor.clear();
+		editor.commit();
+		SharedPreferences preferencesRev = getSharedPreferences("ReporteRevestimiento", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+		if (preferencesRev != null) {
+			Editor editorRev = preferencesRev.edit();
+			editorRev.clear();
+			editorRev.commit();
+		}
+	}
+
+	public void setFlujoNormal(boolean flujoNormal) {
+		this.flujoNormal = flujoNormal;
+	}
+
+	public boolean isFlujoNormal() {
+		return flujoNormal;
+	}
+
+	public boolean isPresencia() {
+		boolean res = false;
+		switch (tipoReporte) {
+
+		case TiposReportes.TIPO_PRESENCIA_CLUSTER_PREGUNTA_MARQUE_CANTIDAD:
+		case TiposReportes.TIPO_PRESENCIA_COLGATE_SKU_FRENTE_PROFUNDIDAD:
+		case TiposReportes.TIPO_PRESENCIA_COLGATE_SUPERVISOR_SKUPRECIO:
+			// case TiposReportes.TIPO_PRESENCIA_COLGATE_SKU_PRES_PRECIO_PEDIDO:
+			// case TiposReportes.TIPO_PRESENCIA_COMPETENCIA_SKU_PRES_PRECIO:
+		case TiposReportes.TIPO_PRESENCIA_COLGATE_GESTOR_SKUPRESENCIA:
+		case TiposReportes.TIPO_PRESENCIA_COMPETENCIA_GESTOR_SKUPRESENCIA:
+		case TiposReportes.TIPO_PRESENCIA_COMPETENCIA_SUPERVISOR_SKUPRECIO:
+		case TiposReportes.TIPO_PRESENCIA_OBSERVACIONES_COLGATE:
+		case TiposReportes.TIPO_PRESENCIA_STOCK_COLGATE_SKU_STOCK:
+		case TiposReportes.TIPO_PRESENCIA_STOCK_COMPETENCIA_SKU_STOCK:
+		case TiposReportes.TIPO_PRESENCIA_VISIBILIDAD_COLGATE_COD_CANTIDAD:
+		case TiposReportes.TIPO_PRESENCIA_VISIBILIDAD_COLGATE_COD_CUENTA_CUMPLE:
+		case TiposReportes.TIPO_PRESENCIA_VISIBILIDAD_COMPETENCIA_COD_PRECIO:
+			res = true;
+			break;
+		default:
+
+			break;
+		}
+		return res;
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		Log.i("ResultadoFoto", "resultCode: " + resultCode + "requestCode: " + requestCode);
+		switch (tipoReporte) {
+		case TiposReportes.TIPO_REVESTIMIENTO_PRESMAT_SF_AAVV:
+		case TiposReportes.TIPO_REVESTIMIENTO_TIPOREVEST_SF_AAVV:
+			if (requestCode == ReporteRevestimiento.TAKE_PICTURE){
+				reporteRevestimiento.retornoFoto(resultCode);
+			}
+		break;
+		case TiposReportes.TIPO_ELEMENTOS_VISIB_SANFERNANDO_TRADICIONAL_CHIKARA:
+			if (requestCode == ReporteElementosVisib.TAKE_PICTURE){
+				reporteElementosVisib.retornoFoto(resultCode);
+			}
+			break;
+		case TiposReportes.TIPO_INCIDENCIA_PRODUCTOS_SF_TRADICIONAL_CHIKARA:
+		case TiposReportes.TIPO_INCIDENCIA_SERVICIOS_SF_TRADICIONAL_CHIKARA:
+			if (requestCode == ReporteIncidenciaConSubreportes.TAKE_PICTURE){
+				reporteIncidencia.retornoFoto(resultCode);
+			}
+			break;
+		case TiposReportes.TIPO_INCIDENCIA_SF_AAVV:
+			Log.i("ReporteGeneral", "onActivityResult()");
+			SharedPreferences p = getSharedPreferences("ReporteFotoIncidencia", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+			if (p != null) {
+				int id_foto = p.getInt("idFoto", 0);
+				String comentario = p.getString("comentario", null);
+				int index = p.getInt("index", 0);
+				idCabeceraGuardada = p.getInt("idCab", 0);
+				SharedPreferences pref = getSharedPreferences("ReporteIncidencia", MODE_WORLD_READABLE | MODE_WORLD_WRITEABLE);
+				Editor editor = pref.edit();
+				editor.putInt("idFoto", id_foto);
+				editor.putString("comentario", comentario);
+				editor.putInt("index", index);
+				editor.putInt("idCab", idCabeceraGuardada);
+				editor.putBoolean("reincioFoto", true);
+				editor.commit();
+			}
+			Intent contenedor = new Intent(this, ContenedorReportes.class);
+			contenedor.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+			contenedor.putExtra("idSubreporte", 0);
+			startActivity(contenedor);			
+			break;
+		case TiposReportes.TIPO_BLOQUEAZUL_BLOQUE_SF_TRADICIONAL_CHIKARA:
+		case TiposReportes.TIPO_BLOQUEAZUL_FRENTE_SF_TRADICIONAL_CHIKARA:
+			if (requestCode == ReporteBloqueAzul.TAKE_PICTURE){
+				reporteBloqueAzul.retornoFoto(resultCode);
+			}
+		break;
+		}
+		
+	}
+}

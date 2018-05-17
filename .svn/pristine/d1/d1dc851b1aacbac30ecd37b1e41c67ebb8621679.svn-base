@@ -1,0 +1,31 @@
+package com.org.seratic.lucky.model;
+
+import com.org.seratic.lucky.accessData.entities.E_ReporteCredito;
+
+public class E_Reporte_Credito_Mov_Detalle {
+
+	private String a; // cod_credito
+	private String b; // valor_credito
+
+	public E_Reporte_Credito_Mov_Detalle(E_ReporteCredito reporte) {
+		this.a = reporte.getCod_credito() == null || reporte.getCod_credito().isEmpty() ? null : reporte.getCod_credito();
+		this.b = reporte.getValor_credito() == null || reporte.getValor_credito().isEmpty() ? null : reporte.getValor_credito();
+	}
+
+	public void setA(String a) {
+		this.a = a;
+	}
+
+	public String getA() {
+		return a;
+	}
+
+	public void setB(String b) {
+		this.b = b;
+	}
+
+	public String getB() {
+		return b;
+	}
+
+}

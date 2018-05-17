@@ -1,0 +1,63 @@
+package com.org.seratic.lucky.model;
+
+import com.org.seratic.lucky.accessData.entities.E_ReporteCapacitacion;
+
+public class E_Reporte_Capacitacion_Mov_Detalle {
+
+	private String a; // cod_capacitacion
+	private String b; // valor_capacitacion
+	private String c; // cod_motivo
+	private String d; // valor_motivo
+	private String e; // cod_categoria
+
+	public E_Reporte_Capacitacion_Mov_Detalle(E_ReporteCapacitacion reporte) {
+		this.a = reporte.getCod_capacitacion() == null || reporte.getCod_capacitacion().isEmpty() ? null : reporte.getCod_capacitacion();
+		this.b = reporte.getValor_capacitacion() == null || reporte.getValor_capacitacion().isEmpty() ? null : reporte.getValor_capacitacion();
+		this.c = reporte.getCod_motivo() == null || reporte.getCod_motivo().isEmpty() ? null : reporte.getCod_motivo();
+		if (c != null) {
+			this.d = reporte.getValor_motivo() == null || reporte.getValor_motivo().isEmpty() || reporte.getValor_motivo().equalsIgnoreCase("0") ? null : reporte.getValor_motivo();
+		}
+		this.e = reporte.getCod_categoria() == null || reporte.getCod_categoria().isEmpty() ? null : reporte.getCod_categoria();
+	}
+
+	public void setA(String a) {
+		this.a = a;
+	}
+
+	public String getA() {
+		return a;
+	}
+
+	public void setB(String b) {
+		this.b = b;
+	}
+
+	public String getB() {
+		return b;
+	}
+
+	public void setC(String c) {
+		this.c = c;
+	}
+
+	public String getC() {
+		return c;
+	}
+
+	public void setE(String e) {
+		this.e = e;
+	}
+
+	public String getE() {
+		return e;
+	}
+
+	public void setD(String d) {
+		this.d = d;
+	}
+
+	public String getD() {
+		return d;
+	}
+
+}

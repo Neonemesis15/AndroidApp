@@ -1,0 +1,56 @@
+package com.org.seratic.lucky.accessData.entities;
+
+public class E_MovParamReporte extends Entity {
+	private int cod_reporte;
+	private int cod_subreporte;
+	private String cod_canal;
+	private String cod_cliente;
+	private int tipo_reporte;
+
+	public E_MovParamReporte() {
+		super();
+	}
+
+	public int getCod_reporte() {
+		return cod_reporte;
+	}
+
+	public void setCod_reporte(int cod_reporte) {
+		this.cod_reporte = cod_reporte;
+	}
+
+	public int getCod_subreporte() {
+		return cod_subreporte;
+	}
+
+	public void setCod_subreporte(int cod_subreporte) {
+		this.cod_subreporte = cod_subreporte;
+	}
+
+	public String getCod_canal() {
+		return cod_canal;
+	}
+
+	public void setCod_canal(String cod_canal) {
+		this.cod_canal = cod_canal;
+	}
+
+	public String getCod_cliente() {
+		return cod_cliente;
+	}
+
+	public void setCod_cliente(String cod_cliente) {
+		this.cod_cliente = cod_cliente;
+	}
+
+	public int getTipo_reporte() {
+		return tipo_reporte;
+	}
+
+	public void setTipo_reporte(int tipo_reporte) {
+		this.tipo_reporte = tipo_reporte;
+	}
+
+	
+
+}

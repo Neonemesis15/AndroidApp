@@ -1,0 +1,123 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/fondo2"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/txtPuntoVenta"
+        style="@style/Titulo"
+        android:text="Titulo" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="right"
+        android:paddingRight="5dp"
+        android:paddingTop="5dp" >
+
+        <Button
+            android:id="@+id/guardar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="right"
+            android:layout_marginLeft="15dp"
+            android:background="@drawable/selector_btn_guardar"
+            android:text="" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal" >
+
+        <!-- <TextView -->
+        <!-- android:id="@+id/textView1" -->
+        <!-- android:layout_width="wrap_content" -->
+        <!-- android:layout_height="wrap_content" -->
+        <!-- android:text="Comentario:" -->
+        <!-- android:textAppearance="?android:attr/textAppearanceMedium" -->
+        <!-- android:layout_gravity="bottom" -->
+        <!-- /> -->
+
+        <ImageView
+            android:id="@+id/imageView1"
+            android:layout_width="wrap_content"
+            android:layout_height="100dp"
+            android:layout_weight="0.34" />
+    </LinearLayout>
+
+    <!-- <LinearLayout -->
+    <!-- android:layout_width="match_parent" -->
+    <!-- android:layout_height="wrap_content" -->
+    <!-- android:padding="5dp"> -->
+
+
+    <!-- <EditText -->
+    <!-- android:id="@+id/editTextcomentVisi" -->
+    <!-- android:layout_width="match_parent" -->
+    <!-- android:layout_height="wrap_content" -->
+    <!-- android:ems="10" -->
+    <!-- android:inputType="textMultiLine" /> -->
+
+
+    <!-- </LinearLayout> -->
+
+
+    <!-- <LinearLayout -->
+    <!-- android:layout_width="fill_parent" -->
+    <!-- android:layout_height="fill_parent" -->
+    <!-- android:orientation="vertical"> -->
+
+    <TextView
+        android:id="@+id/tv_subtitulo"
+        style="@style/Subtitulo" />
+
+    <TableLayout
+        android:layout_width="fill_parent"
+        android:layout_height="30dp"
+        android:stretchColumns="*" >
+
+        <TableRow style="@style/HeadGrilla" >
+
+            <TextView
+                style="@style/TextoHeadGrilla"
+                android:layout_width="30dp"
+                android:text="Id" />
+
+            <TextView
+                style="@style/TextoHeadGrilla"
+                android:layout_width="70dp"
+                android:text="Ex. Prim" />
+
+            <TextView
+                style="@style/TextoHeadGrilla"
+                android:layout_width="60dp"
+                android:text="Ex. Sec" />
+
+            <TextView
+                style="@style/TextoHeadGrilla"
+                android:text="M. Obs" 
+                android:layout_width="100dp"
+                />
+        </TableRow>
+    </TableLayout>
+
+    <ScrollView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        >
+
+        <TableLayout
+            android:id="@+id/tl_reporte_sod_alicorp_mayoristas"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:background="@color/fucsiaLucy"
+            android:stretchColumns="*" >
+        </TableLayout>
+    </ScrollView>
+
+    <!-- </LinearLayout> -->
+
+</LinearLayout>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableRow xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tr_reporte_sod_alicorp_mayoristas"
+    style="@style/BodyGrilla" >
+
+    <TextView
+        android:id="@+id/tv_id"
+        style="@style/TextoBodyGrilla"
+        android:layout_width="40dp" />
+
+    <EditText
+        android:id="@+id/et_exhibprim"
+        style="@style/TextoBodyGrilla"
+        android:layout_width="80dp"
+        android:numeric="integer"
+        android:singleLine="true" />
+
+    <EditText
+        android:id="@+id/et_exhibsec"
+        style="@style/TextoBodyGrilla"
+        android:layout_width="80dp"
+        android:numeric="integer"
+        android:singleLine="true" />
+
+    <Spinner
+        android:id="@+id/spinnerMObs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:prompt="@string/mobs_prompt" />
+
+</TableRow>

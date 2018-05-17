@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Lucky App</string>
+    <color name="txt_rojo">#e4191a</color>
+    <color name="txt_naranja">#ff5e00</color>
+    <color name="txt_violeta">#574494</color>
+    <color name="txt_amarillo">#f9cd3b</color>
+    <color name="txt_azul">#007c8e</color>
+    <color name="txt_verde">#89b127</color>
+    <string name="db_name">LuckyDataBasev2.db</string>
+    <string name="titulo_registro">Registro</string>
+	<string name="versionApp">V.1.20 REV 1745</string>
+	
+	<string name="general_p_registro_inicio">Seguro que desea registrar el inicio</string>
+	<string name="general_p_registro_fin">Seguro que desea registrar el fin</string>
+<!-- 	Módulo de Pendientes -->
+	<string name="pendientes_tit">Lista de pendientes</string>
+	<string name="pendientes_enviando">Enviando pendientes... Por favor espere un momento.</string>
+	<string name="pendientes_tit_estados_pend">Estados pendientes</string>
+	<string name="pendientes_tit_visitas_pend">Visitas pendientes</string>
+	<string name="pendientes_tit_reportes_pend">Reportes pendientes</string>
+	<string name="reportes_itt_agregar_btn">Agregar</string>
+	<string name="reportes_itt_agregar_label">Nombre de la distribuidora</string>
+	<string name="reportes_presnciaIT_agregar_title">Fijar Ventana</string>
+	<string name="reportes_itt_agregar_title">Agregar Distribuidora</string>
+	<string name="reportes_itt_agregar_alert">¿ Está seguro de agregar la distribuidora ? </string>
+	<string name="reportes_itt_guardar_alert">¿ Está seguro de guardar el reporte de: </string>
+	<string name="reportes_guardar_alert"> ¿Desea Guardar el Reporte?</string>
+	<string name="textSi">SI</string>
+	<string name="textNo">NO</string>
+	<string name="reportes_itt_guardar_OK">Reporte codigos ITT guardado con éxito</string>
+	<string name="reportes_itt_guardar_ERROR">Falló el almacenamiento del reporte códigos ITT</string>
+
+	<string name="errorEmptyFields">No se ha diligenciado todos los campos obligatorios</string>
+	<string name="errorEmptyDNIRUC">Debe diligenciar el campo DNI o RUC</string>
+	<string name="errorMinLenght">La longitud mínima es </string>
+	
+	<string name="registroPDVNombre"> Nombre Cliente *</string>
+	<string name="registroPDVApellido"> Apellido Cliente *</string>
+	<string name="registroPDVRazon"> Razón Social * </string>
+	<string name="registroPDVDNI"> DNI *</string>
+	<string name="registroPDVRUC"> RUC</string>
+	<string name="registroPDVDepartamento"> Departamento *</string>
+	<string name="registroPDVProvicia"> Provincia *</string>
+	<string name="registroPDVDistrito"> Distrito *</string>
+	<string name="registroPDVTipoPoblacion"> Tipo Población *</string>
+	<string name="registroPDVDireccion"> Dirección *</string>
+	<string name="registroPDVReferencia"> Referencia *</string>
+	<string name="registroPDVTelefono"> Telefono *</string>
+	
+	<string name="registroPDVAgregarAlert"> ¿Está seguro de guardar el registro del Punto de Venta? </string>
+	<string name="registroPDVImplementarAlert"> ¿Desea registrar la implementación del Punto de Venta? </string>
+	<string name="registroPDVNoImplementacionAlert"> ¿Está seguro de guardar el registro de la No Implementación? </string> 
+	<string name="registroPDVErrorAlert"> Ha ocurrido en error interno intentando registrar la implementación del Punto de Venta </string>   
+	    
+	
+	<string name="reportes_general_guardando">Guardando. Por favor espere...</string>
+	<string name="reportes_general_capturandoFoto">Lanzando Camara...</string>
+	<string name="reporte_fot_cargandoFoto">"Cargando Foto"</string>
+	
+	<string name="tipoPOP_prompt">Seleccione:</string>
+	<string name="titulo_reportes_pendientes">Reportes Pendientes</string>
+	<string name="enviarReportesStr">Enviar Pendientes</string>
+	<string name="valor_aceptado">1</string>
+	<string name="reporte_gurdado_exito">"Reporte guardado con exito"</string>
+	<string name="reportes_no_enviados">Ocurrió un error al enviar los reportes</string>
+	<string name="reportes_enviados">Reportes enviados de forma exitosa</string>
+	
+	<string name="mobs_prompt">Seleccione</string>
+	<string name="reportes_precio_agregar_observacion">Agregar Observación</string>    	
+	<string name="reportes_precio_observacion">Observación:</string>
+	<string name="reportes_ventas_agregar_comentario">Agregar Comentario</string>
+	<string name="reportes_ventas_comentario">Comentario:</string>
+	<string name="registrar_otra_marca">Desea registrar otra marca?</string>
+	<string name="registrar_otra_familia">Desea registrar otra familia?</string>
+	<string name="agregar_foto">Está seguro que desea agregar la foto?</string>
+
+	<!--  -->
+	<string name="registroPDVMantenimientoAlert"> ¿Desea registrar el mantenimiento del Punto de Venta? </string>
+
+	<string-array name="tipo_documento">
+        <item>DNI</item>
+        <item>RUC</item>
+    </string-array>
+	<string name="registroTipoDocumento"> Tipo Documento * </string>
+	<string name="errorMinDoc"> El documento seleccionado debe ser mayor o igual a </string>
+	<string name="registroMercado">Mercado:</string>		    	
+<string name="registroTipoCliente">Tipo cliente:</string>
+</resources>

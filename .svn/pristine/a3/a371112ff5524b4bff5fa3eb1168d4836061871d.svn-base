@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/fondo2"
+    android:orientation="vertical"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    >
+
+    <TextView 
+        android:text="Configuración"
+        style="@style/Titulo"
+        android:layout_marginBottom="40dp"/>
+    
+    
+    <LinearLayout 
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"        
+	    android:paddingLeft="10dp"
+	    android:paddingRight="10dp"
+	    android:orientation="vertical">
+	    
+	    <TextView
+	        android:id="@+id/textusuario"
+	        style="@style/TextoLabel"
+	        android:text="IP o DNS + puerto"
+	         />
+	
+	    <EditText
+	        android:id="@+id/edit_ip"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_marginTop="2dp"
+	        android:inputType="textUri" >    
+			
+	        <requestFocus />
+	    </EditText>
+	
+<!-- 	    <TextView -->
+<!-- 	        android:id="@+id/textpassword" -->
+<!-- 	        android:layout_marginTop="10dp" -->
+<!-- 	        android:text="Puerto" -->
+<!-- 	        style="@style/TextoLabel"/> -->
+	
+<!-- 	    <EditText -->
+<!-- 	        android:id="@+id/edit_puerto" -->
+<!-- 	        android:layout_width="fill_parent" -->
+<!-- 	        android:layout_height="wrap_content" -->
+<!-- 	        android:layout_marginTop="2dp" -->
+<!-- 	        android:maxEms="2" -->
+<!-- 	       	android:inputType="number" -->
+<!-- 	       	android:password="true"/> -->
+	
+	    <Button
+	        android:id="@+id/botoningresar"
+	        android:layout_width="110dp"
+	        android:layout_height="wrap_content"
+	        android:layout_marginTop="25dp"
+	        android:text="Guardar"
+	        android:layout_gravity="center_horizontal"/>
+	    
+	 
+	</LinearLayout>
+</LinearLayout>
